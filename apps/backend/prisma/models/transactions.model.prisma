@@ -1,0 +1,23 @@
+model Transaction {
+  id          String    @id @default(uuid())
+  date        DateTime
+  description String
+  type        String
+  amount      Decimal   @db.Decimal(14, 2)
+  accountId   String
+  account     Account   @relation(fields: [accountId], references: [id])
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id])
+  source      String    @default("manual")
+  importId    String?
+  fingerprint String
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  @@unique([userId, fingerprint])
+  @@index([userId, date])
+  @@map("transactions")
+}

@@ -10,6 +10,8 @@ model Account {
   updatedAt      DateTime @updatedAt
   deletedAt      DateTime?
 
+  transactions Transaction[]
+
   @@index([userId])
   @@map("accounts")
 }

@@ -7,8 +7,9 @@ model User {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  accounts   Account[]
-  categories Category[]
+  accounts     Account[]
+  categories   Category[]
+  transactions Transaction[]
 
   @@map("users")
 }

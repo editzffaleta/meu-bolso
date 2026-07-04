@@ -1,0 +1,261 @@
+@baseUrl = http://localhost:4000
+@scenarioVersion = {{$timestamp}}
+
+### Cadastro do usuario 1 (dono das transacoes) -> 201 sem corpo
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Maria da Silva",
+  "email": "maria.transacoes.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Login do usuario 1 -> 200 com token
+# @name loginUser1
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "maria.transacoes.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Cadastro do usuario 2 (usado para validar isolamento) -> 201 sem corpo
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Joao Pereira",
+  "email": "joao.transacoes.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Login do usuario 2 -> 200 com token
+# @name loginUser2
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "joao.transacoes.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Criacao de conta do usuario 1 -> 201
+# @name createAccountUser1
+POST {{baseUrl}}/accounts
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "name": "Carteira",
+  "type": "wallet",
+  "initialBalance": 0
+}
+
+### Criacao de conta do usuario 2 (para tentativa de invasao) -> 201
+# @name createAccountUser2
+POST {{baseUrl}}/accounts
+Content-Type: application/json
+Authorization: Bearer {{loginUser2.response.body.token}}
+
+{
+  "name": "Carteira do Joao",
+  "type": "wallet",
+  "initialBalance": 0
+}
+
+### Criacao de categoria do usuario 1 -> 201
+# @name createCategoryUser1
+POST {{baseUrl}}/categories
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "name": "Mercado",
+  "type": "expense",
+  "color": "#059669"
+}
+
+### Criacao de categoria do usuario 2 (para tentativa de invasao) -> 201
+# @name createCategoryUser2
+POST {{baseUrl}}/categories
+Content-Type: application/json
+Authorization: Bearer {{loginUser2.response.body.token}}
+
+{
+  "name": "Mercado do Joao",
+  "type": "expense",
+  "color": "#059669"
+}
+
+### Criacao de transacao valida (usuario 1) -> 201
+# @name createTransaction
+POST {{baseUrl}}/transactions
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "date": "2026-01-10T00:00:00.000Z",
+  "description": "Compras do mes",
+  "type": "expense",
+  "amount": 350.75,
+  "accountId": "{{createAccountUser1.response.body.id}}",
+  "categoryId": "{{createCategoryUser1.response.body.id}}"
+}
+
+### Criacao de transacao de receita valida (usuario 1) -> 201
+# @name createIncomeTransaction
+POST {{baseUrl}}/transactions
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "date": "2026-02-05T00:00:00.000Z",
+  "description": "Salario",
+  "type": "income",
+  "amount": 5000,
+  "accountId": "{{createAccountUser1.response.body.id}}"
+}
+
+### Criacao de transacao com accountId de outro usuario -> 404 transaction.account.not.found
+POST {{baseUrl}}/transactions
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "date": "2026-01-10T00:00:00.000Z",
+  "description": "Tentativa de invasao",
+  "type": "expense",
+  "amount": 100,
+  "accountId": "{{createAccountUser2.response.body.id}}"
+}
+
+### Criacao de transacao com categoryId de outro usuario -> 404 transaction.category.not.found
+POST {{baseUrl}}/transactions
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "date": "2026-01-10T00:00:00.000Z",
+  "description": "Tentativa de invasao",
+  "type": "expense",
+  "amount": 100,
+  "accountId": "{{createAccountUser1.response.body.id}}",
+  "categoryId": "{{createCategoryUser2.response.body.id}}"
+}
+
+### Criacao de transacao com amount negativo -> 422
+POST {{baseUrl}}/transactions
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "date": "2026-01-10T00:00:00.000Z",
+  "description": "Invalida",
+  "type": "expense",
+  "amount": -10,
+  "accountId": "{{createAccountUser1.response.body.id}}"
+}
+
+### Criacao de transacao com type fora do enum -> 422
+POST {{baseUrl}}/transactions
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "date": "2026-01-10T00:00:00.000Z",
+  "description": "Invalida",
+  "type": "outro",
+  "amount": 100,
+  "accountId": "{{createAccountUser1.response.body.id}}"
+}
+
+### Listagem de transacoes do usuario 1, sem filtros -> 200 com todas do usuario
+GET {{baseUrl}}/transactions
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Listagem de transacoes do usuario 2 -> 200 lista vazia (isolamento)
+GET {{baseUrl}}/transactions
+Authorization: Bearer {{loginUser2.response.body.token}}
+
+### Listagem com filtro de periodo (retorna apenas a de janeiro) -> 200
+GET {{baseUrl}}/transactions?from=2026-01-01&to=2026-01-31
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Listagem com filtro de type=income -> 200 apenas a transacao de salario
+GET {{baseUrl}}/transactions?type=income
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Listagem com filtro de accountId -> 200
+GET {{baseUrl}}/transactions?accountId={{createAccountUser1.response.body.id}}
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Listagem com filtro de categoryId -> 200 apenas a transacao com categoria
+GET {{baseUrl}}/transactions?categoryId={{createCategoryUser1.response.body.id}}
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Listagem com paginacao (page=1, pageSize=1) -> 200 com 1 item e total >= 2
+GET {{baseUrl}}/transactions?page=1&pageSize=1
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Busca por id da transacao do usuario 1 -> 200
+GET {{baseUrl}}/transactions/{{createTransaction.response.body.id}}
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Busca por id inexistente -> 404 transaction.not.found
+GET {{baseUrl}}/transactions/00000000-0000-4000-8000-000000000000
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Busca da transacao do usuario 1 usando o token do usuario 2 -> 404 transaction.not.found (isolamento)
+GET {{baseUrl}}/transactions/{{createTransaction.response.body.id}}
+Authorization: Bearer {{loginUser2.response.body.token}}
+
+### Atualizacao da transacao do usuario 1 -> 200
+PATCH {{baseUrl}}/transactions/{{createTransaction.response.body.id}}
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "description": "Compras do mes atualizado",
+  "amount": 400
+}
+
+### Atualizacao com amount invalido -> 422
+PATCH {{baseUrl}}/transactions/{{createTransaction.response.body.id}}
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "amount": -5
+}
+
+### Atualizacao usando accountId de outro usuario -> 404 transaction.account.not.found
+PATCH {{baseUrl}}/transactions/{{createTransaction.response.body.id}}
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "accountId": "{{createAccountUser2.response.body.id}}"
+}
+
+### Atualizacao da transacao do usuario 1 usando o token do usuario 2 -> 404 transaction.not.found (isolamento)
+PATCH {{baseUrl}}/transactions/{{createTransaction.response.body.id}}
+Content-Type: application/json
+Authorization: Bearer {{loginUser2.response.body.token}}
+
+{
+  "description": "Tentativa de invasao"
+}
+
+### Exclusao de transacao inexistente -> 404 transaction.not.found
+DELETE {{baseUrl}}/transactions/00000000-0000-4000-8000-000000000000
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Exclusao da transacao do usuario 1 usando o token do usuario 2 -> 404 transaction.not.found (isolamento)
+DELETE {{baseUrl}}/transactions/{{createTransaction.response.body.id}}
+Authorization: Bearer {{loginUser2.response.body.token}}
+
+### Exclusao da transacao do usuario 1 -> 204 sem corpo
+DELETE {{baseUrl}}/transactions/{{createTransaction.response.body.id}}
+Authorization: Bearer {{loginUser1.response.body.token}}
