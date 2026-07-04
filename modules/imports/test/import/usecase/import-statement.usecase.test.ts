@@ -3,6 +3,7 @@ import { Account } from "@meubolso/accounts";
 import { Transaction } from "@meubolso/transactions";
 import { CategorizationRule } from "@meubolso/categories";
 import { ImportStatement } from "../../../src/import/usecase/import-statement.usecase";
+import { generateStatementFingerprint } from "../../../src/import/model/statement-fingerprint.util";
 import {
   FakeAccountRepository,
   FakeCategorizationRuleRepository,
@@ -45,9 +46,12 @@ function buildUseCase(options: {
   ofxRows?: { date: Date; description: string; amount: number }[];
   categorizationRules?: CategorizationRule[];
 }) {
-  const importRepository = new FakeImportRepository();
   const transactionRepository = new FakeTransactionRepository(
     options.transactions ?? [],
+  );
+  const importRepository = new FakeImportRepository(
+    [],
+    transactionRepository,
   );
   const accountRepository = new FakeAccountRepository(options.accounts ?? []);
   const csvParser = new FakeCsvStatementParser(options.csvRows ?? []);
@@ -184,7 +188,10 @@ describe("ImportStatement use case", () => {
     // Reimporta o mesmo arquivo usando o mesmo TransactionRepository (agora
     // ja populado) para simular a deduplicacao contra o historico.
     const { useCase: secondRunUseCase } = (() => {
-      const importRepository = new FakeImportRepository();
+      const importRepository = new FakeImportRepository(
+        [],
+        transactionRepository,
+      );
       const accountRepository = new FakeAccountRepository([buildAccount()]);
       const csvParser = new FakeCsvStatementParser([
         {
@@ -318,8 +325,11 @@ describe("ImportStatement use case", () => {
   });
 
   it("deve computar invalidRows e manter totalRows = importedRows + duplicateRows + invalidRows", async () => {
-    const importRepository = new FakeImportRepository();
     const transactionRepository = new FakeTransactionRepository([]);
+    const importRepository = new FakeImportRepository(
+      [],
+      transactionRepository,
+    );
     const accountRepository = new FakeAccountRepository([buildAccount()]);
     const csvParser = new FakeCsvStatementParser(
       [
@@ -443,7 +453,7 @@ describe("ImportStatement use case", () => {
     );
 
     const secondRunUseCase = new ImportStatement(
-      new FakeImportRepository(),
+      new FakeImportRepository([], transactionRepository),
       transactionRepository,
       new FakeAccountRepository([buildAccount()]),
       new FakeCsvStatementParser(csvRows),
@@ -461,5 +471,141 @@ describe("ImportStatement use case", () => {
 
     expect(result.importedRows).toBe(0);
     expect(findAllByUserSpy).not.toHaveBeenCalled();
+  });
+
+  it("deve marcar o Import como failed (nao deixar em processing) quando a gravacao atomica falha (M6)", async () => {
+    const transactionRepository = new FakeTransactionRepository([]);
+    const importRepository = new FakeImportRepository(
+      [],
+      transactionRepository,
+      new Error("falha simulada de conexao com o banco"),
+    );
+    const accountRepository = new FakeAccountRepository([buildAccount()]);
+    const csvParser = new FakeCsvStatementParser([
+      {
+        date: new Date("2026-06-01T00:00:00.000Z"),
+        description: "Mercado Extra",
+        amount: -150.32,
+      },
+    ]);
+    const ofxParser = new FakeOfxStatementParser([]);
+    const categorizationRuleRepository = new FakeCategorizationRuleRepository();
+
+    const useCase = new ImportStatement(
+      importRepository,
+      transactionRepository,
+      accountRepository,
+      csvParser,
+      ofxParser,
+      categorizationRuleRepository,
+    );
+
+    await expect(
+      useCase.execute({
+        userId: USER_ID,
+        accountId: ACCOUNT_ID,
+        fileName: "extrato.csv",
+        format: "csv",
+        content: "irrelevante",
+      }),
+    ).rejects.toThrow("falha simulada de conexao com o banco");
+
+    expect(transactionRepository.transactions).toHaveLength(0);
+
+    const persisted = importRepository.imports.find(
+      (item) => item.accountId === ACCOUNT_ID,
+    );
+    expect(persisted?.status).toBe("failed");
+  });
+
+  it("deve tratar a violacao de unicidade por corrida (equivalente ao P2002) como duplicata (ConflictError), nao como erro 500, e marcar o Import como failed (M6)", async () => {
+    const existing = new Transaction({
+      date: new Date("2026-06-01T00:00:00.000Z"),
+      description: "Mercado Extra",
+      type: "expense",
+      amount: 150.32,
+      accountId: ACCOUNT_ID,
+      source: "import",
+      fingerprint: "fingerprint-gravado-por-outra-requisicao-concorrente",
+      userId: USER_ID,
+    });
+
+    const transactionRepository = new FakeTransactionRepository([]);
+    const importRepository = new FakeImportRepository(
+      [],
+      transactionRepository,
+    );
+    const accountRepository = new FakeAccountRepository([buildAccount()]);
+    const csvParser = new FakeCsvStatementParser([
+      {
+        date: new Date("2026-06-01T00:00:00.000Z"),
+        description: "Mercado Extra",
+        amount: -150.32,
+      },
+    ]);
+    const ofxParser = new FakeOfxStatementParser([]);
+    const categorizationRuleRepository = new FakeCategorizationRuleRepository();
+
+    const useCase = new ImportStatement(
+      importRepository,
+      transactionRepository,
+      accountRepository,
+      csvParser,
+      ofxParser,
+      categorizationRuleRepository,
+    );
+
+    // Simula a corrida: a checagem de duplicatas do caso de uso passa (nao ha
+    // duplicata no momento da consulta), mas outra requisicao concorrente
+    // grava a MESMA transacao antes da gravacao atomica desta -- o banco real
+    // dispararia P2002; aqui simulamos gravando a transacao concorrente
+    // diretamente no FakeTransactionRepository com o mesmo fingerprint que o
+    // caso de uso vai calcular, fazendo `FakeImportRepository` lancar
+    // ConflictError dentro de `createWithTransactions`.
+    const csvRow = {
+      date: new Date("2026-06-01T00:00:00.000Z"),
+      description: "Mercado Extra",
+      amount: -150.32,
+    };
+
+    const raceFingerprint = generateStatementFingerprint({
+      date: csvRow.date,
+      amount: csvRow.amount,
+      accountId: ACCOUNT_ID,
+      description: csvRow.description,
+    });
+
+    const originalFindByFingerprints =
+      transactionRepository.findByFingerprints.bind(transactionRepository);
+    let callCount = 0;
+    transactionRepository.findByFingerprints = async (userId, fingerprints) => {
+      callCount += 1;
+      if (callCount === 1) {
+        // Primeira checagem (dentro do caso de uso, antes de gravar): sem
+        // duplicatas ainda.
+        return originalFindByFingerprints(userId, fingerprints);
+      }
+      // Chamada feita pela FakeImportRepository dentro de
+      // createWithTransactions: simula que a transacao concorrente ja foi
+      // gravada por outra requisicao.
+      return fingerprints.includes(raceFingerprint) ? [raceFingerprint] : [];
+    };
+
+    void existing;
+
+    await expect(
+      useCase.execute({
+        userId: USER_ID,
+        accountId: ACCOUNT_ID,
+        fileName: "extrato.csv",
+        format: "csv",
+        content: "irrelevante",
+      }),
+    ).rejects.toMatchObject({ statusCode: 409 });
+
+    const persisted = importRepository.imports.find(
+      (item) => item.accountId === ACCOUNT_ID,
+    );
+    expect(persisted?.status).toBe("failed");
   });
 });

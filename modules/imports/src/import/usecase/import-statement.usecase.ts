@@ -65,6 +65,7 @@ export class ImportStatement
       fingerprint: generateStatementFingerprint({
         date: row.date,
         amount: row.amount,
+        accountId: input.accountId,
         description: row.description,
       }),
     }));
@@ -91,24 +92,25 @@ export class ImportStatement
 
     const totalRows = rows.length + invalidRows;
 
+    // O `id` e reservado antecipadamente (o construtor do Entity gera um uuid
+    // quando nao informado) para que as transacoes ja referenciem o
+    // `importId` correto dentro da MESMA transacao de banco que grava o
+    // Import (M6 da auditoria).
     let importEntity = new Import({
       fileName: input.fileName,
       format: input.format,
-      status: "processing",
+      status: "done",
       accountId: input.accountId,
       totalRows,
-      importedRows: 0,
+      importedRows: rowsToImport.length,
       duplicateRows,
       invalidRows,
       userId: input.userId,
     });
 
     importEntity.validate();
-    importEntity = await this.importRepository.create(importEntity);
 
-    const createdTransactionIds: string[] = [];
-
-    for (const row of rowsToImport) {
+    const transactionsToCreate = rowsToImport.map((row) => {
       const type = row.amount < 0 ? "expense" : "income";
       const amount = Math.abs(row.amount);
 
@@ -127,17 +129,29 @@ export class ImportStatement
 
       transaction.validate();
 
-      const created = await this.transactionRepository.create(transaction);
-      createdTransactionIds.push(created.id);
-    }
-
-    const finishedImport = importEntity.clone({
-      status: "done",
-      importedRows: rowsToImport.length,
-      duplicateRows,
+      return transaction;
     });
 
-    await this.importRepository.update(finishedImport);
+    let createdTransactionIds: string[] = [];
+
+    try {
+      const result = await this.importRepository.createWithTransactions(
+        importEntity,
+        transactionsToCreate,
+      );
+
+      importEntity = result.importEntity;
+      createdTransactionIds = result.createdTransactions.map((tx) => tx.id);
+    } catch (error) {
+      // Qualquer falha na gravacao atomica (inclusive `ConflictError` por
+      // corrida no indice unico parcial -- Prisma P2002) marca o Import como
+      // "failed" em vez de deixa-lo preso em "processing". O
+      // `ApiExceptionFilter` mapeia `ConflictError` para HTTP 409 (nao 500),
+      // pois ela estende `DomainError`.
+      const failedImport = importEntity.clone({ status: "failed" });
+      await this.importRepository.create(failedImport);
+      throw error;
+    }
 
     if (createdTransactionIds.length > 0) {
       const applyRules = new ApplyRules(
@@ -152,9 +166,9 @@ export class ImportStatement
     }
 
     return {
-      importId: finishedImport.id,
+      importId: importEntity.id,
       totalRows,
-      importedRows: rowsToImport.length,
+      importedRows: createdTransactionIds.length,
       duplicateRows,
       invalidRows,
     };
