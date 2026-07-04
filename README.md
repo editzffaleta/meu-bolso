@@ -12,7 +12,7 @@
 Dashboard de **finanças pessoais** full-stack: importe extratos bancários em **CSV/OFX**, tenha os
 gastos **categorizados automaticamente** e acompanhe para onde o dinheiro vai em **gráficos mensais**.
 
-> Projeto pessoal — construído para praticar arquitetura full-stack limpa de ponta a ponta
+> Projeto pessoal construído para praticar arquitetura full-stack limpa de ponta a ponta
 > (domínio → API → UI), com testes e CI.
 
 ## 📸 Telas
@@ -84,7 +84,7 @@ executado novamente sem duplicar dados.
 ## 📥 Como funciona a importação
 
 Você envia um extrato em **CSV** ou **OFX** e escolhe a conta de destino. O backend detecta o
-formato, faz o parsing, **deduplica** reimportações e cria as transações — que já nascem
+formato, faz o parsing, **deduplica** reimportações e cria as transações que já nascem
 **categorizadas** pelas suas regras de `palavra-chave → categoria`.
 
 **CSV** (header flexível — aceita `data|date|dt`, `descricao|descrição|description|memo`,
@@ -109,7 +109,7 @@ data,descricao,valor
 ```
 
 Cada lançamento recebe um *fingerprint* (hash de data + valor + descrição). Se você reenviar o mesmo
-extrato, as linhas repetidas são ignoradas (contam como duplicadas no resumo) — mas lançamentos
+extrato, as linhas repetidas são ignoradas (contam como duplicadas no resumo) mas lançamentos
 manuais idênticos e legítimos continuam permitidos, porque a unicidade vale só para o que veio de
 importação. Há arquivos de exemplo em [`apps/e2e/fixtures/`](apps/e2e/fixtures).
 
@@ -139,7 +139,7 @@ packages/
   corpo/query), e a posse de recursos referenciados (conta/categoria de uma transação) é validada
   no caso de uso. Testado cruzando dois usuários em cada módulo (acesso ao dado alheio → `404`).
 
-- **Autenticação stateless com JWT.** O domínio de `auth` não conhece token/sessão — apenas valida
+- **Autenticação stateless com JWT.** O domínio de `auth` não conhece token/sessão apenas valida
   credenciais. A camada HTTP assina o JWT (`{ sub, name, email }`); o frontend guarda em cookie e
   um *guard* protege o grupo de rotas privadas.
 
