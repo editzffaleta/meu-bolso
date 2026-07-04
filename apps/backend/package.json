@@ -31,6 +31,7 @@
   "dependencies": {
     "@meubolso/accounts": "*",
     "@meubolso/auth": "*",
+    "@meubolso/categories": "*",
     "@meubolso/shared": "^1.0.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.4",

@@ -33,6 +33,14 @@ export const errorMessagesPt = {
   'account.userId.required': 'Usuário inválido.',
   'account.userId.uuid': 'Usuário inválido.',
   'account.not.found': 'Conta não encontrada.',
+  'category.name.required': 'O nome da categoria é obrigatório.',
+  'category.type.required': 'O tipo da categoria é obrigatório.',
+  'category.type.in': 'Selecione um tipo de categoria válido.',
+  'category.color.required': 'A cor da categoria é obrigatória.',
+  'category.color.regex': 'Informe uma cor hexadecimal válida (ex.: #059669).',
+  'category.userId.required': 'Usuário inválido.',
+  'category.userId.uuid': 'Usuário inválido.',
+  'category.not.found': 'Categoria não encontrada.',
 } as const;
 
 export type ErrorMessageKey = keyof typeof errorMessagesPt;

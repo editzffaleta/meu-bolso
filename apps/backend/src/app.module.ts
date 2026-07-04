@@ -9,6 +9,7 @@ import { JwtAuthGuard } from './shared/auth/jwt-auth.guard';
 import { ApiExceptionFilter } from './shared/errors/api-exception.filter';
 import { AuthModule } from './modules/auth/auth.module';
 import { AccountsModule } from './modules/accounts/accounts.module';
+import { CategoriesModule } from './modules/categories/categories.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { AccountsModule } from './modules/accounts/accounts.module';
     JwtAuthModule,
     AuthModule,
     AccountsModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [

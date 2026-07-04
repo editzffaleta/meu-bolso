@@ -1,0 +1,158 @@
+@baseUrl = http://localhost:4000
+@scenarioVersion = {{$timestamp}}
+
+### Cadastro do usuario 1 (dono das categorias) -> 201 sem corpo
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Maria da Silva",
+  "email": "maria.categorias.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Login do usuario 1 -> 200 com token
+# @name loginUser1
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "maria.categorias.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Cadastro do usuario 2 (usado para validar isolamento) -> 201 sem corpo
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Joao Pereira",
+  "email": "joao.categorias.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Login do usuario 2 -> 200 com token
+# @name loginUser2
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "joao.categorias.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Seed de categorias padrao do usuario 1 (primeira chamada) -> 200 com created: 7
+# @name seedFirstCall
+POST {{baseUrl}}/categories/seed-defaults
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Seed de categorias padrao do usuario 1 (segunda chamada) -> 200 com created: 0 (idempotente)
+# @name seedSecondCall
+POST {{baseUrl}}/categories/seed-defaults
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Criacao de categoria com dados validos (usuario 1) -> 201 com a categoria criada
+# @name createCategory
+POST {{baseUrl}}/categories
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "name": "Assinaturas",
+  "type": "expense",
+  "color": "#3B82F6",
+  "icon": "credit-card"
+}
+
+### Criacao de categoria com name vazio -> 422
+POST {{baseUrl}}/categories
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "name": "",
+  "type": "expense",
+  "color": "#3B82F6"
+}
+
+### Criacao de categoria com type fora do enum -> 422
+POST {{baseUrl}}/categories
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "name": "Categoria invalida",
+  "type": "outro",
+  "color": "#3B82F6"
+}
+
+### Criacao de categoria com color fora do padrao hex -> 422
+POST {{baseUrl}}/categories
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "name": "Categoria invalida",
+  "type": "expense",
+  "color": "azul"
+}
+
+### Listagem de categorias do usuario 1 -> 200 com as 7 padrao + a customizada (8 no total)
+GET {{baseUrl}}/categories
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Listagem de categorias do usuario 2 -> 200 lista vazia (isolamento, seed nao foi chamado para ele)
+GET {{baseUrl}}/categories
+Authorization: Bearer {{loginUser2.response.body.token}}
+
+### Busca por id da categoria do usuario 1 -> 200 com a categoria
+GET {{baseUrl}}/categories/{{createCategory.response.body.id}}
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Busca por id de categoria inexistente -> 404 category.not.found
+GET {{baseUrl}}/categories/00000000-0000-4000-8000-000000000000
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Busca da categoria do usuario 1 usando o token do usuario 2 -> 404 category.not.found (isolamento)
+GET {{baseUrl}}/categories/{{createCategory.response.body.id}}
+Authorization: Bearer {{loginUser2.response.body.token}}
+
+### Atualizacao da categoria do usuario 1 -> 200 com a categoria atualizada
+PATCH {{baseUrl}}/categories/{{createCategory.response.body.id}}
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "name": "Assinaturas digitais",
+  "color": "#8B5CF6"
+}
+
+### Atualizacao com dados invalidos (color fora do padrao hex) -> 422
+PATCH {{baseUrl}}/categories/{{createCategory.response.body.id}}
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "color": "invalida"
+}
+
+### Atualizacao da categoria do usuario 1 usando o token do usuario 2 -> 404 category.not.found (isolamento)
+PATCH {{baseUrl}}/categories/{{createCategory.response.body.id}}
+Content-Type: application/json
+Authorization: Bearer {{loginUser2.response.body.token}}
+
+{
+  "name": "Tentativa de invasao"
+}
+
+### Exclusao de categoria inexistente -> 404 category.not.found
+DELETE {{baseUrl}}/categories/00000000-0000-4000-8000-000000000000
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Exclusao da categoria do usuario 1 usando o token do usuario 2 -> 404 category.not.found (isolamento)
+DELETE {{baseUrl}}/categories/{{createCategory.response.body.id}}
+Authorization: Bearer {{loginUser2.response.body.token}}
+
+### Exclusao da categoria do usuario 1 -> 204 sem corpo
+DELETE {{baseUrl}}/categories/{{createCategory.response.body.id}}
+Authorization: Bearer {{loginUser1.response.body.token}}

@@ -35,4 +35,12 @@ export const errorMessagesEn: ErrorMessages = {
   'account.userId.required': 'Invalid user.',
   'account.userId.uuid': 'Invalid user.',
   'account.not.found': 'Account not found.',
+  'category.name.required': 'Category name is required.',
+  'category.type.required': 'Category type is required.',
+  'category.type.in': 'Select a valid category type.',
+  'category.color.required': 'Category color is required.',
+  'category.color.regex': 'Enter a valid hex color (e.g.: #059669).',
+  'category.userId.required': 'Invalid user.',
+  'category.userId.uuid': 'Invalid user.',
+  'category.not.found': 'Category not found.',
 };
