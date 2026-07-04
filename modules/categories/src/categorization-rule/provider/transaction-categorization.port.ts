@@ -30,4 +30,17 @@ export interface TransactionCategorizationPort {
   findAllByUser(userId: string): Promise<CategorizableTransaction[]>;
 
   update(entity: CategorizableTransaction): Promise<CategorizableTransaction>;
+
+  /**
+   * Persiste todas as entidades informadas de forma ATOMICA (tudo ou nada):
+   * a implementacao concreta deve rodar as atualizacoes dentro de uma unica
+   * transacao de banco (`prisma.$transaction`), revertendo tudo se qualquer
+   * atualizacao falhar. Usado por `recategorize-all` (auditoria M7) para
+   * evitar estado parcial quando `includeAlreadyCategorized=true`: antes,
+   * as transacoes eram zeradas uma a uma sem transacao de banco, entao uma
+   * falha no meio deixava categorias apagadas para sempre.
+   */
+  updateMany(
+    entities: CategorizableTransaction[],
+  ): Promise<CategorizableTransaction[]>;
 }

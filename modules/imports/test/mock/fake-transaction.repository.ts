@@ -31,6 +31,13 @@ export class FakeTransactionRepository implements TransactionRepository {
     return entity;
   }
 
+  async updateMany(entities: Transaction[]): Promise<Transaction[]> {
+    for (const entity of entities) {
+      this.storage.set(entity.id, entity);
+    }
+    return entities;
+  }
+
   async delete(id: string, userId: string): Promise<void> {
     const existing = this.storage.get(id);
 

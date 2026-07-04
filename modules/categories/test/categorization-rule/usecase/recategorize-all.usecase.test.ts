@@ -65,7 +65,7 @@ describe("RecategorizeAll use case", () => {
     expect(updatedAlreadyCategorized?.categoryId).toBe(FOOD_CATEGORY_ID);
   });
 
-  it("com includeAlreadyCategorized=true, zera categoryId de tudo antes de reavaliar", async () => {
+  it("com includeAlreadyCategorized=true, recategoriza apenas as transacoes que casam com alguma regra (nao zera antes)", async () => {
     const alreadyCategorized = buildTransaction({
       description: "UBER *TRIP",
       categoryId: FOOD_CATEGORY_ID,
@@ -92,7 +92,7 @@ describe("RecategorizeAll use case", () => {
     expect(updated?.categoryId).toBe(TRANSPORT_CATEGORY_ID);
   });
 
-  it("com includeAlreadyCategorized=true e nenhuma regra casando, transacao fica sem categoria", async () => {
+  it("com includeAlreadyCategorized=true e nenhuma regra casando, PRESERVA a categoria manual existente (nao zera)", async () => {
     const alreadyCategorized = buildTransaction({
       description: "Supermercado ABC",
       categoryId: FOOD_CATEGORY_ID,
@@ -116,18 +116,42 @@ describe("RecategorizeAll use case", () => {
       alreadyCategorized.id,
       USER_ID,
     );
-    expect(updated?.categoryId).toBeNull();
+    expect(updated?.categoryId).toBe(FOOD_CATEGORY_ID);
   });
 
-  it("com includeAlreadyCategorized=true, nao chama update para transacoes ja sem categoria", async () => {
-    const withoutCategory = buildTransaction({ description: "UBER *TRIP" });
+  it("com includeAlreadyCategorized=true, nao chama updateMany quando nenhuma transacao casa com regra", async () => {
+    const alreadyCategorized = buildTransaction({
+      description: "Supermercado ABC",
+      categoryId: FOOD_CATEGORY_ID,
+    });
+    const rule = buildRule({ keyword: "uber" });
+
+    const ruleRepository = new FakeCategorizationRuleRepository([rule]);
+    const transactionRepository = new FakeTransactionCategorizationPort([
+      alreadyCategorized,
+    ]);
+    const updateManySpy = jest.spyOn(transactionRepository, "updateMany");
+
+    const useCase = new RecategorizeAll(ruleRepository, transactionRepository);
+    await useCase.execute({
+      userId: USER_ID,
+      includeAlreadyCategorized: true,
+    });
+
+    expect(updateManySpy).not.toHaveBeenCalled();
+  });
+
+  it("com includeAlreadyCategorized=true, transacao que ja tem a categoria correta (mesma da regra) nao e recontada como categorizada", async () => {
+    const alreadyCorrect = buildTransaction({
+      description: "UBER *TRIP",
+      categoryId: TRANSPORT_CATEGORY_ID,
+    });
     const rule = buildRule({ keyword: "uber", categoryId: TRANSPORT_CATEGORY_ID });
 
     const ruleRepository = new FakeCategorizationRuleRepository([rule]);
     const transactionRepository = new FakeTransactionCategorizationPort([
-      withoutCategory,
+      alreadyCorrect,
     ]);
-    const updateSpy = jest.spyOn(transactionRepository, "update");
 
     const useCase = new RecategorizeAll(ruleRepository, transactionRepository);
     const result = await useCase.execute({
@@ -135,9 +159,39 @@ describe("RecategorizeAll use case", () => {
       includeAlreadyCategorized: true,
     });
 
-    expect(result).toEqual({ evaluated: 1, categorized: 1 });
-    // A unica chamada de update deve ser a categorizacao feita por apply-rules,
-    // nao um "clear" desnecessario (a transacao ja estava sem categoria).
-    expect(updateSpy).toHaveBeenCalledTimes(1);
+    expect(result).toEqual({ evaluated: 1, categorized: 0 });
+  });
+
+  it("falha no meio do lote (updateMany atomico) nao deixa estado parcial: todas as transacoes mantem a categoria anterior", async () => {
+    const first = buildTransaction({
+      description: "UBER *TRIP",
+      categoryId: FOOD_CATEGORY_ID,
+    });
+    const second = buildTransaction({
+      description: "UBER EATS",
+      categoryId: null,
+    });
+    const rule = buildRule({ keyword: "uber", categoryId: TRANSPORT_CATEGORY_ID });
+
+    const ruleRepository = new FakeCategorizationRuleRepository([rule]);
+    const transactionRepository = new FakeTransactionCategorizationPort([
+      first,
+      second,
+    ]);
+    // Simula falha apos aplicar a primeira atualizacao do lote: o
+    // `updateMany` real (Prisma `$transaction`) deve reverter tudo.
+    transactionRepository.failAfter = 1;
+
+    const useCase = new RecategorizeAll(ruleRepository, transactionRepository);
+
+    await expect(
+      useCase.execute({ userId: USER_ID, includeAlreadyCategorized: true }),
+    ).rejects.toThrow();
+
+    const updatedFirst = await transactionRepository.findById(first.id, USER_ID);
+    const updatedSecond = await transactionRepository.findById(second.id, USER_ID);
+
+    expect(updatedFirst?.categoryId).toBe(FOOD_CATEGORY_ID);
+    expect(updatedSecond?.categoryId).toBeNull();
   });
 });

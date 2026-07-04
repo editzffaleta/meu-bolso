@@ -12,6 +12,22 @@ export interface RecategorizeAllIn {
 
 export type RecategorizeAllOut = ApplyRulesOut;
 
+/**
+ * Recategoriza em massa as transacoes do usuario.
+ *
+ * Correcao da auditoria M7: a versao anterior, com
+ * `includeAlreadyCategorized=true`, ZERAVA a categoria de TODAS as
+ * transacoes uma a uma (sem transacao de banco) antes de reaplicar as
+ * regras -- uma falha no meio deixava categorias apagadas, e transacoes que
+ * nao casassem com nenhuma regra perdiam a categorizacao manual para
+ * sempre.
+ *
+ * Agora: para cada transacao candidata, calculamos a nova categoria pelas
+ * regras SEM zerar antes. So entram no lote de escrita as transacoes que
+ * efetivamente casarem com alguma regra (as demais permanecem como estao,
+ * preservando categorizacao manual). O lote e persistido atomicamente via
+ * `TransactionCategorizationPort.updateMany` (tudo ou nada).
+ */
 export class RecategorizeAll
   implements UseCase<RecategorizeAllIn, RecategorizeAllOut>
 {
@@ -30,23 +46,37 @@ export class RecategorizeAll
       return applyRules.execute({ userId: input.userId });
     }
 
-    const allTransactions = await this.transactionCategorizationPort.findAllByUser(
+    const rules = await this.categorizationRuleRepository.findAllByUser(
+      input.userId,
+    );
+    const candidates = await this.transactionCategorizationPort.findAllByUser(
       input.userId,
     );
 
-    const ids: string[] = [];
+    const updates = [];
 
-    for (const transaction of allTransactions) {
-      ids.push(transaction.id);
+    for (const transaction of candidates) {
+      const matchingRule = rules.find((rule) =>
+        rule.matches(transaction.description),
+      );
 
-      if (transaction.categoryId) {
-        const cleared = transaction.clone({ categoryId: null });
-        cleared.validate();
-
-        await this.transactionCategorizationPort.update(cleared);
+      if (!matchingRule || matchingRule.categoryId === transaction.categoryId) {
+        continue;
       }
+
+      const updated = transaction.clone({ categoryId: matchingRule.categoryId });
+      updated.validate();
+
+      updates.push(updated);
     }
 
-    return applyRules.execute({ userId: input.userId, transactionIds: ids });
+    if (updates.length > 0) {
+      await this.transactionCategorizationPort.updateMany(updates);
+    }
+
+    return {
+      evaluated: candidates.length,
+      categorized: updates.length,
+    };
   }
 }

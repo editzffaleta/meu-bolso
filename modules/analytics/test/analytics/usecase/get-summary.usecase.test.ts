@@ -92,4 +92,21 @@ describe("GetSummary", () => {
 
     expect(result.transactionCount).toBe(0);
   });
+
+  it("deve arredondar o saldo com precisao exata mesmo com valores propensos a erro de ponto flutuante", async () => {
+    const transactionRepository = new FakeTransactionRepository([
+      buildTransaction(USER_ID, "income", 10.1, new Date("2026-07-01T12:00:00Z")),
+      buildTransaction(USER_ID, "income", 20.2, new Date("2026-07-02T12:00:00Z")),
+      buildTransaction(USER_ID, "income", 5.05, new Date("2026-07-03T12:00:00Z")),
+      buildTransaction(USER_ID, "expense", 0.1, new Date("2026-07-04T12:00:00Z")),
+      buildTransaction(USER_ID, "expense", 0.2, new Date("2026-07-05T12:00:00Z")),
+    ]);
+    const useCase = new GetSummary(transactionRepository);
+
+    const result = await useCase.execute({ userId: USER_ID, month: "2026-07" });
+
+    expect(result.totalIncome).toBe(35.35);
+    expect(result.totalExpense).toBe(0.3);
+    expect(result.balance).toBe(35.05);
+  });
 });
