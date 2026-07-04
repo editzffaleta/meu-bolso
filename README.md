@@ -52,6 +52,21 @@ npm run dev
 
 Acesse `http://localhost:3000`.
 
+## 🎬 Rodar dados de demonstração
+
+Para abrir o dashboard já populado (contas, categorias, ~6 meses de transações, regras de
+categorização e orçamentos), rode o seed de demonstração após subir o banco e aplicar as
+migrations:
+
+```bash
+# garanta que SEED_DEMO_PASSWORD está definida em apps/backend/.env
+# (valor de exemplo documentado em apps/backend/.env.example)
+npm run seed:demo
+```
+
+Depois, faça login com `demo@meubolso.app` e a senha definida em `SEED_DEMO_PASSWORD`. O script é
+idempotente — pode ser executado novamente sem duplicar dados.
+
 ## 📂 Estrutura
 
 ```
