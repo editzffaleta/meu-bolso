@@ -1,7 +1,13 @@
-# meu-bolso 💰
+<p align="center">
+  <img src="screenshots/cover.png" alt="meu-bolso — dashboard de finanças pessoais" width="100%" />
+</p>
 
-[![CI](https://github.com/editzffaleta/meu-bolso/actions/workflows/ci.yml/badge.svg)](https://github.com/editzffaleta/meu-bolso/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+<p align="center">
+  <a href="https://github.com/editzffaleta/meu-bolso/actions/workflows/ci.yml"><img src="https://github.com/editzffaleta/meu-bolso/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a>
+</p>
+
+# meu-bolso 💰
 
 Dashboard de **finanças pessoais** full-stack: importe extratos bancários em **CSV/OFX**, tenha os
 gastos **categorizados automaticamente** e acompanhe para onde o dinheiro vai em **gráficos mensais**.
