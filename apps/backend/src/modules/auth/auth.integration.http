@@ -70,3 +70,57 @@ Content-Type: application/json
   "email": "nao-e-um-email",
   "password": "123456"
 }
+
+### Cadastro do usuario usado nos cenarios de login abaixo -> 201 sem corpo
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Jose da Conceicao",
+  "email": "jose.login.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Login com credenciais validas -> 200 com token + user (sem password)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "jose.login.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Login com e-mail inexistente -> 401 user.credentials.invalid
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "nao.cadastrado.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Login com senha incorreta -> 401 user.credentials.invalid (mesma mensagem do cenario anterior)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "jose.login.{{scenarioVersion}}@example.com",
+  "password": "SenhaErrada@123"
+}
+
+### Login com e-mail invalido -> 422
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "nao-e-um-email",
+  "password": "Strong@123"
+}
+
+### Login com dados incompletos (sem password) -> 422
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "jose.login.{{scenarioVersion}}@example.com"
+}

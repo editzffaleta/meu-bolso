@@ -8,6 +8,7 @@ export const errorMessagesPt = {
   MIN_ITEMS: 'Mínimo de {{min}} itens.',
   REQUIRED_FIELD: 'Campo de preenchimento obrigatório.',
   SHELL_CONTEXT_PROVIDER_REQUIRED: 'useShellContext deve ser usado dentro de <ShellProvider>.',
+  AUTH_CONTEXT_PROVIDER_REQUIRED: 'useAuth deve ser usado dentro de <AuthProvider>.',
   THEME_CONTEXT_PROVIDER_REQUIRED: 'useTheme deve ser usado dentro de <ThemeProvider>.',
   UNKNOWN_ERROR_CODE: 'Erro desconhecido: {{code}}',
   INTERNAL_SERVER_ERROR: 'Ocorreu um erro interno no servidor. Tente novamente mais tarde.',
@@ -23,6 +24,7 @@ export const errorMessagesPt = {
   'user.password.no.common.password': 'Essa senha é muito comum. Escolha outra senha.',
   'user.password.bcrypt.hash': 'Não foi possível processar a senha informada.',
   'user.email.already.registered': 'Este e-mail já está cadastrado.',
+  'user.credentials.invalid': 'E-mail ou senha inválidos.',
 } as const;
 
 export type ErrorMessageKey = keyof typeof errorMessagesPt;

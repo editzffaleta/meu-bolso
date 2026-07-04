@@ -10,6 +10,7 @@ export const errorMessagesEn: ErrorMessages = {
   MIN_ITEMS: 'Minimum of {{min}} items.',
   REQUIRED_FIELD: 'This field is required.',
   SHELL_CONTEXT_PROVIDER_REQUIRED: 'useShellContext must be used within <ShellProvider>.',
+  AUTH_CONTEXT_PROVIDER_REQUIRED: 'useAuth must be used within <AuthProvider>.',
   THEME_CONTEXT_PROVIDER_REQUIRED: 'useTheme must be used within <ThemeProvider>.',
   UNKNOWN_ERROR_CODE: 'Unknown error: {{code}}',
   INTERNAL_SERVER_ERROR: 'An internal server error occurred. Please try again later.',
@@ -25,4 +26,5 @@ export const errorMessagesEn: ErrorMessages = {
   'user.password.no.common.password': 'This password is too common. Please choose another one.',
   'user.password.bcrypt.hash': 'Unable to process the provided password.',
   'user.email.already.registered': 'This email is already registered.',
+  'user.credentials.invalid': 'Invalid email or password.',
 };

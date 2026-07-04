@@ -1,12 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { getMessage } from '@/shared/i18n';
 import type { ApiErrorResponse } from '@/shared/types/api-error.type';
+import { useAuth } from '@/modules/auth/context/auth.context';
+import { DASHBOARD_ROUTE } from '@/shared/navigation/app-navigation.config';
 
 type Mode = 'login' | 'register';
 
@@ -14,6 +17,18 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
 export default function JoinPage() {
   const [mode, setMode] = useState<Mode>('register');
+  const { status } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.replace(DASHBOARD_ROUTE);
+    }
+  }, [status, router]);
+
+  if (status === 'loading' || status === 'authenticated') {
+    return <div aria-busy="true" className="min-h-screen bg-background" />;
+  }
 
   return (
     <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[1.05fr_1fr]">
@@ -197,10 +212,42 @@ function RegisterForm() {
 function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login } = useAuth();
+  const router = useRouter();
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    // Login funcional será implementado na change 004-login-usuario.
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (response.status === 200) {
+        const data = (await response.json()) as { token: string };
+        login(data.token);
+        router.push(DASHBOARD_ROUTE);
+        return;
+      }
+
+      let body: ApiErrorResponse | null = null;
+      try {
+        body = (await response.json()) as ApiErrorResponse;
+      } catch {
+        body = null;
+      }
+
+      const errorCodes = body?.errors?.length ? body.errors : ['INTERNAL_SERVER_ERROR'];
+      errorCodes.forEach((code) => toast.error(getMessage(code)));
+    } catch {
+      toast.error(getMessage('INTERNAL_SERVER_ERROR'));
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -235,8 +282,8 @@ function LoginForm() {
           />
         </div>
 
-        <Button type="submit" size="lg" className="mt-2 w-full">
-          Entrar
+        <Button type="submit" size="lg" className="mt-2 w-full" disabled={isSubmitting}>
+          {isSubmitting ? 'Entrando...' : 'Entrar'}
         </Button>
       </form>
     </>
