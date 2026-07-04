@@ -31,9 +31,9 @@ export class OfxStatementParserImpl implements OfxStatementParser {
       }
 
       const date = this.parseOfxDate(dtposted);
-      const amount = Number(trnamt);
+      const amount = this.parseAmount(trnamt);
 
-      if (!date || Number.isNaN(amount)) {
+      if (!date || amount === null) {
         invalidRows += 1;
         continue;
       }
@@ -96,5 +96,40 @@ export class OfxStatementParserImpl implements OfxStatementParser {
     }
 
     return new Date(Date.UTC(year, month - 1, day));
+  }
+
+  /**
+   * Parse tolerante do valor OFX (`TRNAMT`), aceitando ponto ou virgula como
+   * separador decimal (ex.: "-123.45" ou "-123,45"). OFX normalmente nao usa
+   * separador de milhar, mas mantemos a normalizacao alinhada ao CSV.
+   */
+  private parseAmount(raw: string): number | null {
+    let normalized = raw.replace(/\s/g, '');
+    const isNegative = normalized.startsWith('-');
+
+    if (isNegative || normalized.startsWith('+')) {
+      normalized = normalized.slice(1);
+    }
+
+    const hasComma = normalized.includes(',');
+    const hasDot = normalized.includes('.');
+
+    if (hasComma && hasDot) {
+      normalized = normalized.replace(/\./g, '').replace(',', '.');
+    } else if (hasComma) {
+      normalized = normalized.replace(',', '.');
+    }
+
+    if (!/^\d+(\.\d+)?$/.test(normalized)) {
+      return null;
+    }
+
+    const value = Number(normalized);
+
+    if (Number.isNaN(value)) {
+      return null;
+    }
+
+    return isNegative ? -value : value;
   }
 }

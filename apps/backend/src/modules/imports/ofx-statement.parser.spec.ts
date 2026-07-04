@@ -75,6 +75,22 @@ describe('OfxStatementParserImpl', () => {
     expect(invalidRows).toBe(1);
   });
 
+  it('deve parsear TRNAMT com virgula decimal', async () => {
+    const content = [
+      '<STMTTRN>',
+      '<DTPOSTED>20260601',
+      '<TRNAMT>-123,45',
+      '<MEMO>Compra com virgula</MEMO>',
+      '</STMTTRN>',
+    ].join('\n');
+
+    const { rows, invalidRows } = await parser.parse(content);
+
+    expect(invalidRows).toBe(0);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].amount).toBe(-123.45);
+  });
+
   it('deve retornar lista vazia quando nao ha blocos STMTTRN', async () => {
     const { rows, invalidRows } = await parser.parse(
       'conteudo sem tags relevantes',
