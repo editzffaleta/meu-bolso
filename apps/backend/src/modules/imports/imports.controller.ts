@@ -22,6 +22,7 @@ import { PrismaCategorizationRuleRepository } from '../categories/categorization
 import { PrismaImportRepository } from './import.prisma';
 import { CsvStatementParserImpl } from './csv-statement.parser';
 import { OfxStatementParserImpl } from './ofx-statement.parser';
+import { decodeStatementBuffer } from './decode-buffer.util';
 
 const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
 
@@ -73,7 +74,7 @@ export class ImportsController {
       accountId: body.accountId,
       fileName: file.originalname,
       format,
-      content: file.buffer.toString('utf-8'),
+      content: decodeStatementBuffer(file.buffer),
     });
   }
 
