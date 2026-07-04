@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { TooltipProvider } from "@/shared/components/ui/tooltip";
 import { Toaster } from "@/shared/components/ui/toaster";
@@ -32,11 +33,10 @@ export default function RootLayout({
       className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <head>
-        { }
-        <script dangerouslySetInnerHTML={{ __html: THEME_ANTI_FLASH_SCRIPT }} />
-      </head>
       <body className="min-h-full flex flex-col">
+        <Script id="theme-anti-flash" strategy="beforeInteractive">
+          {THEME_ANTI_FLASH_SCRIPT}
+        </Script>
         <ThemeProvider>
           <AuthProvider>
             <TooltipProvider>{children}</TooltipProvider>
