@@ -11,7 +11,7 @@ gastos **categorizados automaticamente** e acompanhe para onde o dinheiro vai em
 
 ## 📸 Telas
 
-![Dashboard do meu-bolso](screenshots/dashboard.png)
+![Tour pelo meu-bolso](screenshots/demo.gif)
 
 <p align="center">
   <img src="screenshots/transacoes.png" width="49%" alt="Transações com filtros e paginação" />
@@ -87,6 +87,38 @@ npm run seed:demo
 Depois, na tela de acesso, clique em **"Entrar com conta de demonstração"** (ou informe
 `demo@meubolso.app` e a senha definida em `SEED_DEMO_PASSWORD`). O script é idempotente — pode ser
 executado novamente sem duplicar dados.
+
+## 📥 Como funciona a importação
+
+Você envia um extrato em **CSV** ou **OFX** e escolhe a conta de destino. O backend detecta o
+formato, faz o parsing, **deduplica** reimportações e cria as transações — que já nascem
+**categorizadas** pelas suas regras de `palavra-chave → categoria`.
+
+**CSV** (header flexível — aceita `data|date|dt`, `descricao|descrição|description|memo`,
+`valor|amount|value`; valor negativo = despesa):
+
+```csv
+data,descricao,valor
+2026-06-01,MERCADO SUPERMERCADO,-150.32
+2026-06-03,Salario,4500.00
+2026-06-05,Restaurante Sabor,-89.90
+```
+
+**OFX** (SGML de banco — lê `<STMTTRN>` com `<DTPOSTED>`, `<TRNAMT>` e `<MEMO>`):
+
+```xml
+<STMTTRN>
+  <TRNTYPE>DEBIT
+  <DTPOSTED>20260601
+  <TRNAMT>-150.32
+  <MEMO>MERCADO SUPERMERCADO
+</STMTTRN>
+```
+
+Cada lançamento recebe um *fingerprint* (hash de data + valor + descrição). Se você reenviar o mesmo
+extrato, as linhas repetidas são ignoradas (contam como duplicadas no resumo) — mas lançamentos
+manuais idênticos e legítimos continuam permitidos, porque a unicidade vale só para o que veio de
+importação. Há arquivos de exemplo em [`apps/e2e/fixtures/`](apps/e2e/fixtures).
 
 ## 📂 Estrutura
 
