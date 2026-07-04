@@ -44,6 +44,17 @@ gastos **categorizados automaticamente** e acompanhe para onde o dinheiro vai em
 Arquitetura em camadas (Clean Architecture + DDD): o domínio não depende de framework nem de ORM;
 os casos de uso recebem *ports* e a persistência Prisma as implementa.
 
+## 📚 Documentação
+
+Documentação técnica completa em [`docs/`](docs/):
+
+- [Arquitetura](docs/arquitetura.md) — camadas, módulos e decisões de projeto
+- [Referência da API](docs/api.md) — endpoints, autenticação e payloads
+- [Modelo de dados](docs/banco-de-dados.md) — ERD e entidades
+- [Importação CSV/OFX](docs/import.md) — formatos e deduplicação
+- [Guia de desenvolvimento](docs/desenvolvimento.md) — setup, scripts e testes
+- [Como contribuir](CONTRIBUTING.md)
+
 ## 🚀 Rodando localmente
 
 Pré-requisitos: **Node 20+**, **npm** e um **PostgreSQL** acessível.

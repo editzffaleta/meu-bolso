@@ -44,7 +44,6 @@ yarn-error.log*
 .windsurf/
 openspec/
 changes-templates/
-docs/
 _fabrica/
 scripts/
 AGENTS.md
