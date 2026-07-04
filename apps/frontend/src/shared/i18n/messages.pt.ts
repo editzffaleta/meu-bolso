@@ -59,6 +59,10 @@ export const errorMessagesPt = {
   'transaction.not.found': 'Transação não encontrada.',
   'transaction.account.not.found': 'Conta não encontrada.',
   'transaction.category.not.found': 'Categoria não encontrada.',
+  'import.account.not.found': 'Conta não encontrada.',
+  'import.format.unsupported': 'Formato de arquivo não suportado. Envie um arquivo .csv ou .ofx.',
+  'import.file.empty': 'Não encontramos nenhuma linha válida nesse arquivo.',
+  'import.file.too.large': 'O arquivo excede o tamanho máximo permitido (2 MB).',
 } as const;
 
 export type ErrorMessageKey = keyof typeof errorMessagesPt;

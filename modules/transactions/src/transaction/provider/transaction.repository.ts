@@ -38,4 +38,12 @@ export interface TransactionRepository {
     page: number,
     pageSize: number,
   ): Promise<TransactionListResult>;
+
+  /**
+   * Busca, entre as transacoes do usuario, quais dos fingerprints informados
+   * ja existem (usado pela importacao de extratos - 008 - para deduplicar
+   * linhas de um arquivo contra transacoes ja persistidas). Retorna apenas os
+   * fingerprints encontrados.
+   */
+  findByFingerprints(userId: string, fingerprints: string[]): Promise<string[]>;
 }

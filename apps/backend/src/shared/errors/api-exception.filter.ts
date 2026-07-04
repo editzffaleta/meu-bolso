@@ -7,6 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { MulterError } from 'multer';
 import {
   DomainError,
   ValidationError,
@@ -43,6 +44,26 @@ export class ApiExceptionFilter implements ExceptionFilter {
   }
 
   private buildShape(exception: unknown): ErrorShape {
+    if (
+      exception instanceof MulterError &&
+      exception.code === 'LIMIT_FILE_SIZE'
+    ) {
+      return {
+        statusCode: HttpStatus.PAYLOAD_TOO_LARGE,
+        errors: ['import.file.too.large'],
+      };
+    }
+
+    if (
+      exception instanceof HttpException &&
+      exception.getStatus() === HttpStatus.PAYLOAD_TOO_LARGE
+    ) {
+      return {
+        statusCode: HttpStatus.PAYLOAD_TOO_LARGE,
+        errors: ['import.file.too.large'],
+      };
+    }
+
     if (exception instanceof ValidationException) {
       return {
         statusCode: exception.statusCode,

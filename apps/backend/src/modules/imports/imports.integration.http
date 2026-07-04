@@ -1,0 +1,171 @@
+@baseUrl = http://localhost:4000
+@scenarioVersion = {{$timestamp}}
+
+### Cadastro do usuario 1 (dono das importacoes) -> 201 sem corpo
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Maria da Silva",
+  "email": "maria.imports.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Login do usuario 1 -> 200 com token
+# @name loginUser1
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "maria.imports.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Cadastro do usuario 2 (usado para validar isolamento) -> 201 sem corpo
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Joao Pereira",
+  "email": "joao.imports.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Login do usuario 2 -> 200 com token
+# @name loginUser2
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "joao.imports.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Criacao de conta do usuario 1 -> 201
+# @name createAccountUser1
+POST {{baseUrl}}/accounts
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "name": "Carteira",
+  "type": "wallet",
+  "initialBalance": 0
+}
+
+### Criacao de conta do usuario 2 (para tentativa de invasao) -> 201
+# @name createAccountUser2
+POST {{baseUrl}}/accounts
+Content-Type: application/json
+Authorization: Bearer {{loginUser2.response.body.token}}
+
+{
+  "name": "Carteira do Joao",
+  "type": "wallet",
+  "initialBalance": 0
+}
+
+### Importacao de CSV valido (usuario 1) -> 201 com importedRows=2, duplicateRows=0
+# @name importCsv
+POST {{baseUrl}}/imports
+Content-Type: multipart/form-data; boundary=----ImportBoundaryCsv
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+------ImportBoundaryCsv
+Content-Disposition: form-data; name="accountId"
+
+{{createAccountUser1.response.body.id}}
+------ImportBoundaryCsv
+Content-Disposition: form-data; name="file"; filename="extrato-exemplo.csv"
+Content-Type: text/csv
+
+< ./fixtures/extrato-exemplo.csv
+------ImportBoundaryCsv--
+
+### Reimportacao do MESMO CSV (usuario 1) -> 201 com importedRows=0, duplicateRows=2
+POST {{baseUrl}}/imports
+Content-Type: multipart/form-data; boundary=----ImportBoundaryCsvDup
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+------ImportBoundaryCsvDup
+Content-Disposition: form-data; name="accountId"
+
+{{createAccountUser1.response.body.id}}
+------ImportBoundaryCsvDup
+Content-Disposition: form-data; name="file"; filename="extrato-exemplo.csv"
+Content-Type: text/csv
+
+< ./fixtures/extrato-exemplo.csv
+------ImportBoundaryCsvDup--
+
+### Importacao de OFX valido (usuario 1, conta diferente para nao colidir com fingerprint ja usado) -> 201
+POST {{baseUrl}}/imports
+Content-Type: multipart/form-data; boundary=----ImportBoundaryOfx
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+------ImportBoundaryOfx
+Content-Disposition: form-data; name="accountId"
+
+{{createAccountUser1.response.body.id}}
+------ImportBoundaryOfx
+Content-Disposition: form-data; name="file"; filename="extrato-exemplo.ofx"
+Content-Type: application/octet-stream
+
+< ./fixtures/extrato-exemplo.ofx
+------ImportBoundaryOfx--
+
+### Importacao com accountId de outro usuario -> 404 import.account.not.found
+POST {{baseUrl}}/imports
+Content-Type: multipart/form-data; boundary=----ImportBoundaryNotFound
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+------ImportBoundaryNotFound
+Content-Disposition: form-data; name="accountId"
+
+{{createAccountUser2.response.body.id}}
+------ImportBoundaryNotFound
+Content-Disposition: form-data; name="file"; filename="extrato-exemplo.csv"
+Content-Type: text/csv
+
+< ./fixtures/extrato-exemplo.csv
+------ImportBoundaryNotFound--
+
+### Importacao com extensao nao suportada -> 422 import.format.unsupported
+POST {{baseUrl}}/imports
+Content-Type: multipart/form-data; boundary=----ImportBoundaryUnsupported
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+------ImportBoundaryUnsupported
+Content-Disposition: form-data; name="accountId"
+
+{{createAccountUser1.response.body.id}}
+------ImportBoundaryUnsupported
+Content-Disposition: form-data; name="file"; filename="extrato-exemplo.txt"
+Content-Type: text/plain
+
+data,descricao,valor
+------ImportBoundaryUnsupported--
+
+### Importacao de arquivo CSV vazio (sem linhas validas) -> 422 import.file.empty
+POST {{baseUrl}}/imports
+Content-Type: multipart/form-data; boundary=----ImportBoundaryEmpty
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+------ImportBoundaryEmpty
+Content-Disposition: form-data; name="accountId"
+
+{{createAccountUser1.response.body.id}}
+------ImportBoundaryEmpty
+Content-Disposition: form-data; name="file"; filename="vazio.csv"
+Content-Type: text/csv
+
+data,descricao,valor
+------ImportBoundaryEmpty--
+
+### Historico de importacoes do usuario 1 -> 200 com os imports criados acima
+GET {{baseUrl}}/imports
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Historico de importacoes do usuario 2 -> 200 lista vazia (isolamento)
+GET {{baseUrl}}/imports
+Authorization: Bearer {{loginUser2.response.body.token}}

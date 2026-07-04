@@ -11,6 +11,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { AccountsModule } from './modules/accounts/accounts.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
+import { ImportsModule } from './modules/imports/imports.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { TransactionsModule } from './modules/transactions/transactions.module';
     AccountsModule,
     CategoriesModule,
     TransactionsModule,
+    ImportsModule,
   ],
   controllers: [AppController],
   providers: [

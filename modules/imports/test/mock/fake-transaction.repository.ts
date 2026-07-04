@@ -3,7 +3,7 @@ import {
   TransactionFilters,
   TransactionListResult,
   TransactionRepository,
-} from "../../src";
+} from "@meubolso/transactions";
 
 export class FakeTransactionRepository implements TransactionRepository {
   private readonly storage = new Map<string, Transaction>();
@@ -52,32 +52,13 @@ export class FakeTransactionRepository implements TransactionRepository {
     page: number,
     pageSize: number,
   ): Promise<TransactionListResult> {
-    const filtered = this.transactions
-      .filter((transaction) => transaction.userId === userId)
-      .filter((transaction) =>
-        filters.from ? transaction.date >= filters.from : true,
-      )
-      .filter((transaction) =>
-        filters.to ? transaction.date <= filters.to : true,
-      )
-      .filter((transaction) =>
-        filters.accountId ? transaction.accountId === filters.accountId : true,
-      )
-      .filter((transaction) =>
-        filters.categoryId
-          ? transaction.categoryId === filters.categoryId
-          : true,
-      )
-      .filter((transaction) =>
-        filters.type ? transaction.type === filters.type : true,
-      )
-      .sort((a, b) => b.date.getTime() - a.date.getTime());
-
+    const filtered = this.transactions.filter(
+      (transaction) => transaction.userId === userId,
+    );
     const total = filtered.length;
     const start = (page - 1) * pageSize;
-    const items = filtered.slice(start, start + pageSize);
 
-    return { items, total };
+    return { items: filtered.slice(start, start + pageSize), total };
   }
 
   async findByFingerprints(

@@ -61,4 +61,8 @@ export const errorMessagesEn: ErrorMessages = {
   'transaction.not.found': 'Transaction not found.',
   'transaction.account.not.found': 'Account not found.',
   'transaction.category.not.found': 'Category not found.',
+  'import.account.not.found': 'Account not found.',
+  'import.format.unsupported': 'Unsupported file format. Please upload a .csv or .ofx file.',
+  'import.file.empty': 'We could not find any valid rows in that file.',
+  'import.file.too.large': 'The file exceeds the maximum allowed size (2 MB).',
 };

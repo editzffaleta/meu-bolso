@@ -99,6 +99,22 @@ export class PrismaTransactionRepository implements TransactionRepository {
     };
   }
 
+  async findByFingerprints(
+    userId: string,
+    fingerprints: string[],
+  ): Promise<string[]> {
+    if (fingerprints.length === 0) {
+      return [];
+    }
+
+    const found = await this.prisma.transaction.findMany({
+      where: { userId, fingerprint: { in: fingerprints } },
+      select: { fingerprint: true },
+    });
+
+    return found.map((item) => item.fingerprint);
+  }
+
   private toPersistence(transaction: Transaction) {
     return {
       id: transaction.id,

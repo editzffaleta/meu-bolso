@@ -1,3 +1,9 @@
+// O indice unico (userId, fingerprint) da migration inicial foi substituido
+// por um indice unico PARCIAL (WHERE source = 'import'), criado via SQL raw na
+// migration `imports-partial-unique-fingerprint` (change 008). Motivo: a dedup
+// por fingerprint so faz sentido para transacoes IMPORTADAS -- duas
+// transacoes MANUAIS identicas (mesma data/valor/descricao) sao um cenario
+// legitimo (ex.: duas compras iguais no mesmo dia) e nao podem ser bloqueadas.
 model Transaction {
   id          String    @id @default(uuid())
   date        DateTime
@@ -17,7 +23,7 @@ model Transaction {
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
 
-  @@unique([userId, fingerprint])
   @@index([userId, date])
+  @@index([userId, fingerprint])
   @@map("transactions")
 }

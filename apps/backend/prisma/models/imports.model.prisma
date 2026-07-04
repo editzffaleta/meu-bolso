@@ -1,0 +1,19 @@
+model Import {
+  id            String   @id @default(uuid())
+  fileName      String
+  format        String
+  status        String   @default("processing")
+  accountId     String
+  account       Account  @relation(fields: [accountId], references: [id])
+  totalRows     Int      @default(0)
+  importedRows  Int      @default(0)
+  duplicateRows Int      @default(0)
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  deletedAt     DateTime?
+
+  @@index([userId, createdAt])
+  @@map("imports")
+}

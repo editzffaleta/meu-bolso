@@ -11,6 +11,7 @@ model Account {
   deletedAt      DateTime?
 
   transactions Transaction[]
+  imports      Import[]
 
   @@index([userId])
   @@map("accounts")
