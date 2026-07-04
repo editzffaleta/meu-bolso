@@ -13,19 +13,6 @@ gastos **categorizados automaticamente** e acompanhe para onde o dinheiro vai em
 
 ![Tour pelo meu-bolso](screenshots/demo.gif)
 
-<p align="center">
-  <img src="screenshots/transacoes.png" width="49%" alt="Transações com filtros e paginação" />
-  <img src="screenshots/importar.png" width="49%" alt="Importação de extratos CSV/OFX" />
-</p>
-<p align="center">
-  <img src="screenshots/orcamentos.png" width="49%" alt="Orçamentos com barras de progresso" />
-  <img src="screenshots/categorias.png" width="49%" alt="Categorias e regras de categorização" />
-</p>
-<p align="center">
-  <img src="screenshots/contas.png" width="49%" alt="Contas do usuário" />
-  <img src="screenshots/login.png" width="49%" alt="Tela de acesso" />
-</p>
-
 ## ✨ Funcionalidades
 
 - **Contas** — cadastre contas/carteiras (corrente, poupança, carteira, cartão).
