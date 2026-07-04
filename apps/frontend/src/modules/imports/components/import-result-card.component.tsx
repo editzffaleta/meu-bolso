@@ -11,7 +11,10 @@ type ImportResultCardProps = {
 
 export function ImportResultCard({ result, onReset }: ImportResultCardProps) {
   return (
-    <div className="rounded-2xl border border-primary/30 bg-primary/5 p-5">
+    <div
+      className="rounded-2xl border border-primary/30 bg-primary/5 p-5"
+      data-testid="import-result-summary"
+    >
       <div className="mb-3.5 flex items-center gap-2.5">
         <span className="grid size-8.5 place-items-center rounded-lg bg-primary text-primary-foreground">
           <Check className="size-5" />

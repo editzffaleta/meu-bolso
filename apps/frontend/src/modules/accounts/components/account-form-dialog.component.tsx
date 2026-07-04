@@ -69,7 +69,12 @@ function AccountFormDialogContent({
             <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" form="account-form" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              form="account-form"
+              disabled={isSubmitting}
+              data-testid="account-form-submit"
+            >
               {isSubmitting ? 'Salvando...' : 'Salvar conta'}
             </Button>
           </>
@@ -81,6 +86,7 @@ function AccountFormDialogContent({
             <Input
               id="account-name"
               name="name"
+              data-testid="account-form-name"
               value={values.name}
               onChange={(event) => setValues((current) => ({ ...current, name: event.target.value }))}
               required
@@ -97,6 +103,7 @@ function AccountFormDialogContent({
                   setValues((current) => ({ ...current, type: value as AccountType }))
                 }
                 placeholder="Selecione o tipo"
+                data-testid="account-form-type"
               />
             </div>
 

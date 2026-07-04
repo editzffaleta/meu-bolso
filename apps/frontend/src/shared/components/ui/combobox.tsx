@@ -18,6 +18,7 @@ type ComboboxProps = {
   onChange?: (value: string) => void;
   placeholder?: string;
   emptyText?: string;
+  'data-testid'?: string;
 };
 
 export function Combobox({
@@ -26,6 +27,7 @@ export function Combobox({
   onChange,
   placeholder = 'Selecionar...',
   emptyText = 'Nenhum item encontrado.',
+  'data-testid': dataTestId,
 }: ComboboxProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -40,7 +42,12 @@ export function Combobox({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" role="combobox" className="w-full justify-between">
+        <Button
+          variant="outline"
+          role="combobox"
+          data-testid={dataTestId}
+          className="w-full justify-between"
+        >
           {selected ? selected.label : placeholder}
           <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-60" />
         </Button>
@@ -60,6 +67,7 @@ export function Combobox({
               <button
                 type="button"
                 key={option.value}
+                data-testid={dataTestId ? `${dataTestId}-option-${option.value}` : undefined}
                 onClick={() => {
                   onChange?.(option.value);
                   setOpen(false);

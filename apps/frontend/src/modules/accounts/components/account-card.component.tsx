@@ -17,7 +17,10 @@ export function AccountCard({ account, onEdit, onDelete }: AccountCardProps) {
   const isNegative = account.initialBalance < 0;
 
   return (
-    <div className="group relative rounded-2xl border border-border bg-card p-5 shadow-sm transition-colors hover:border-primary/40">
+    <div
+      className="group relative rounded-2xl border border-border bg-card p-5 shadow-sm transition-colors hover:border-primary/40"
+      data-testid="accounts-list-row"
+    >
       <div className="flex items-start justify-between">
         <span className="grid size-12 place-items-center rounded-xl bg-primary/10">
           <Wallet className="size-6 text-primary" />

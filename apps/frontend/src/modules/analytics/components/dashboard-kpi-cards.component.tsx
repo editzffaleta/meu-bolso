@@ -35,6 +35,7 @@ export function DashboardKpiCards({ summary, isLoading }: DashboardKpiCardsProps
           isBalancePositive ? 'text-emerald-400' : 'text-rose-400'
         }`}
         iconColorClassName={isBalancePositive ? 'text-emerald-400' : 'text-rose-400'}
+        data-testid="dashboard-kpi-balance"
       />
 
       <MetricCard

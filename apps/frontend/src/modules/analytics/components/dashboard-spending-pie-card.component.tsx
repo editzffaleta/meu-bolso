@@ -13,7 +13,10 @@ export function DashboardSpendingPieCard({ items, isLoading }: DashboardSpending
   const total = items.reduce((sum, item) => sum + item.total, 0);
 
   return (
-    <Card className="relative overflow-hidden border-white/10 bg-linear-to-br from-zinc-900 via-zinc-900/95 to-zinc-800/45 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]">
+    <Card
+      className="relative overflow-hidden border-white/10 bg-linear-to-br from-zinc-900 via-zinc-900/95 to-zinc-800/45 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]"
+      data-testid="dashboard-chart-category"
+    >
       <CardHeader className="gap-1 pb-2">
         <CardTitle className="text-lg font-semibold text-zinc-50">Gastos por categoria</CardTitle>
         <p className="text-sm text-zinc-400">Distribuição das despesas no mês selecionado</p>

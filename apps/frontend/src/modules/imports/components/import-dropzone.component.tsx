@@ -40,6 +40,7 @@ export function ImportDropzone({
       <div
         className="rounded-2xl border border-border bg-muted/40 px-6 py-9 text-center"
         aria-busy="true"
+        data-testid="import-dropzone"
       >
         <Loader2 className="mx-auto mb-4 size-9 animate-spin text-primary" />
         <p className="mb-1 text-sm font-bold">Processando extrato…</p>
@@ -74,6 +75,7 @@ export function ImportDropzone({
         'cursor-pointer rounded-2xl border-2 border-dashed border-border bg-muted/40 px-6 py-9 text-center transition-colors',
         isDragOver && 'border-primary bg-primary/5',
       )}
+      data-testid="import-dropzone"
     >
       <span className="mx-auto mb-3.5 grid size-15 place-items-center rounded-2xl border border-border bg-card">
         <CloudUpload className="size-7.5 text-primary" />
@@ -87,6 +89,7 @@ export function ImportDropzone({
         type="file"
         accept={ACCEPTED_IMPORT_EXTENSIONS.join(',')}
         className="hidden"
+        data-testid="import-submit"
         onChange={(event) => {
           handleFile(event.target.files?.[0]);
           event.target.value = '';

@@ -49,7 +49,7 @@ export function AdminShell({
   void logoHref;
 
   return (
-    <div className="h-screen overflow-hidden bg-background text-foreground">
+    <div className="h-screen overflow-hidden bg-background text-foreground" data-testid="app-shell">
       <div className="flex h-full">
         <aside
           className={cn(

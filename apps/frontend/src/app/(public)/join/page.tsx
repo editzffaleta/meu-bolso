@@ -90,6 +90,7 @@ function ModeTabs({
     <div className="mb-7 inline-flex rounded-xl border bg-muted p-1">
       <button
         type="button"
+        data-testid="join-tab-login"
         onClick={() => onChange('login')}
         className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
           mode === 'login'
@@ -101,6 +102,7 @@ function ModeTabs({
       </button>
       <button
         type="button"
+        data-testid="join-tab-register"
         onClick={() => onChange('register')}
         className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
           mode === 'register'
@@ -162,13 +164,14 @@ function RegisterForm() {
         Comece a organizar suas finanças em poucos minutos.
       </p>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} data-testid="join-form" className="flex flex-col gap-4">
         <div>
           <Label htmlFor="register-name">Nome completo</Label>
           <Input
             id="register-name"
             name="name"
             autoComplete="name"
+            data-testid="register-name"
             value={name}
             onChange={(event) => setName(event.target.value)}
             required
@@ -182,6 +185,7 @@ function RegisterForm() {
             name="email"
             type="email"
             autoComplete="email"
+            data-testid="register-email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             required
@@ -195,13 +199,20 @@ function RegisterForm() {
             name="password"
             type="password"
             autoComplete="new-password"
+            data-testid="register-password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             required
           />
         </div>
 
-        <Button type="submit" size="lg" className="mt-2 w-full" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          size="lg"
+          className="mt-2 w-full"
+          disabled={isSubmitting}
+          data-testid="join-submit"
+        >
           {isSubmitting ? 'Criando conta...' : 'Criar conta'}
         </Button>
       </form>
@@ -257,7 +268,7 @@ function LoginForm() {
         Acesse sua conta para continuar.
       </p>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} data-testid="login-form" className="flex flex-col gap-4">
         <div>
           <Label htmlFor="login-email">E-mail</Label>
           <Input
@@ -265,6 +276,7 @@ function LoginForm() {
             name="email"
             type="email"
             autoComplete="email"
+            data-testid="login-email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
           />
@@ -277,12 +289,19 @@ function LoginForm() {
             name="password"
             type="password"
             autoComplete="current-password"
+            data-testid="login-password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
           />
         </div>
 
-        <Button type="submit" size="lg" className="mt-2 w-full" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          size="lg"
+          className="mt-2 w-full"
+          disabled={isSubmitting}
+          data-testid="login-submit"
+        >
           {isSubmitting ? 'Entrando...' : 'Entrar'}
         </Button>
       </form>

@@ -16,6 +16,7 @@ type MetricCardProps = {
   subtitleClassName?: string;
   valueClassName?: string;
   iconContainerClassName?: string;
+  'data-testid'?: string;
 };
 
 export function MetricCard({
@@ -32,9 +33,11 @@ export function MetricCard({
   subtitleClassName,
   valueClassName,
   iconContainerClassName,
+  'data-testid': dataTestId,
 }: MetricCardProps) {
   return (
     <Card
+      data-testid={dataTestId}
       className={cn(
         'relative overflow-hidden border border-white/10 bg-linear-to-br from-zinc-900 via-zinc-900/95 to-zinc-800/45 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]',
         className,

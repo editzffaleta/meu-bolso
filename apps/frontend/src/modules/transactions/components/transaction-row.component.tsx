@@ -35,7 +35,7 @@ export function TransactionRow({ transaction, account, category, onEdit, onDelet
   const isManual = transaction.source === 'manual';
 
   return (
-    <TableRow>
+    <TableRow data-testid="transactions-table-row">
       <TableCell className="whitespace-nowrap font-mono-money text-sm text-muted-foreground">
         {formatDateBR(transaction.date)}
       </TableCell>
@@ -49,12 +49,15 @@ export function TransactionRow({ transaction, account, category, onEdit, onDelet
           <span
             className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11.5px] font-semibold"
             style={{ backgroundColor: hexToSoftBackground(category.color), color: category.color }}
+            data-testid="transaction-category-badge"
           >
             <LucideIconByKey name={category.icon} size={13} iconColor={category.color} />
             {category.name}
           </span>
         ) : (
-          <span className="text-xs text-muted-foreground">Sem categoria</span>
+          <span className="text-xs text-muted-foreground" data-testid="transaction-category-badge">
+            Sem categoria
+          </span>
         )}
       </TableCell>
 

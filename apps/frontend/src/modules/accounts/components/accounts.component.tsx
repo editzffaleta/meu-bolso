@@ -119,7 +119,7 @@ export default function AccountsComponent() {
         title="Contas"
         subtitle="Suas contas e saldos"
         aside={
-          <Button onClick={handleOpenCreate}>
+          <Button onClick={handleOpenCreate} data-testid="accounts-create-button">
             <Plus className="size-4" />
             Nova conta
           </Button>

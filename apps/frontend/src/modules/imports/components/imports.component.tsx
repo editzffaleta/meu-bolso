@@ -131,6 +131,7 @@ export default function ImportsComponent() {
               onChange={setAccountId}
               placeholder="Selecione a conta"
               emptyText="Nenhuma conta cadastrada."
+              data-testid="import-account-select"
             />
           </div>
 
