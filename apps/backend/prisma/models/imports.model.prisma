@@ -8,6 +8,7 @@ model Import {
   totalRows     Int      @default(0)
   importedRows  Int      @default(0)
   duplicateRows Int      @default(0)
+  invalidRows   Int      @default(0)
   userId        String
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt     DateTime @default(now())

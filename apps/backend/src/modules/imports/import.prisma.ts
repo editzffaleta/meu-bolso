@@ -17,6 +17,7 @@ interface ImportRaw {
   totalRows: number;
   importedRows: number;
   duplicateRows: number;
+  invalidRows: number;
   userId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -75,6 +76,7 @@ export class PrismaImportRepository implements ImportRepository {
       totalRows: entity.totalRows,
       importedRows: entity.importedRows,
       duplicateRows: entity.duplicateRows,
+      invalidRows: entity.invalidRows,
       userId: entity.userId,
     };
   }
@@ -92,6 +94,7 @@ export class PrismaImportRepository implements ImportRepository {
       totalRows: raw.totalRows,
       importedRows: raw.importedRows,
       duplicateRows: raw.duplicateRows,
+      invalidRows: raw.invalidRows,
       userId: raw.userId,
     });
   }

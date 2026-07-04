@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { OfxStatementParser, StatementRow } from '@meubolso/imports';
+import {
+  OfxStatementParser,
+  StatementParseResult,
+  StatementRow,
+} from '@meubolso/imports';
 
 /**
  * Parser SGML minimo de extratos OFX. Extrai blocos `<STMTTRN>` (tolerante a
@@ -10,9 +14,10 @@ import { OfxStatementParser, StatementRow } from '@meubolso/imports';
 export class OfxStatementParserImpl implements OfxStatementParser {
   // Parsing e sincrono; a assinatura e Promise por contrato da porta StatementParser.
   // eslint-disable-next-line @typescript-eslint/require-await
-  async parse(content: string): Promise<StatementRow[]> {
+  async parse(content: string): Promise<StatementParseResult> {
     const blocks = this.extractBlocks(content);
     const rows: StatementRow[] = [];
+    let invalidRows = 0;
 
     for (const block of blocks) {
       const dtposted = this.extractTag(block, 'DTPOSTED');
@@ -21,6 +26,7 @@ export class OfxStatementParserImpl implements OfxStatementParser {
         this.extractTag(block, 'MEMO') ?? this.extractTag(block, 'NAME');
 
       if (!dtposted || !trnamt || !memo) {
+        invalidRows += 1;
         continue;
       }
 
@@ -28,13 +34,14 @@ export class OfxStatementParserImpl implements OfxStatementParser {
       const amount = Number(trnamt);
 
       if (!date || Number.isNaN(amount)) {
+        invalidRows += 1;
         continue;
       }
 
       rows.push({ date, description: memo.trim(), amount });
     }
 
-    return rows;
+    return { rows, invalidRows };
   }
 
   private extractBlocks(content: string): string[] {

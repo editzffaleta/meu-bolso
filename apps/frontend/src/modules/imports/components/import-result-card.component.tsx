@@ -54,6 +54,27 @@ export function ImportResultCard({ result, onReset }: ImportResultCardProps) {
         </div>
       </div>
 
+      {result.invalidRows > 0 && (
+        <div
+          data-testid="import-invalid-rows"
+          style={{
+            marginTop: 10,
+            background: 'var(--surface)',
+            borderRadius: 10,
+            padding: 12,
+            textAlign: 'center',
+            border: '1px solid #dc2626',
+          }}
+        >
+          <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 20, fontWeight: 700, color: '#dc2626' }}>
+            {result.invalidRows}
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 2 }}>
+            Linha(s) rejeitada(s) (não parseável)
+          </div>
+        </div>
+      )}
+
       <button
         type="button"
         onClick={onReset}

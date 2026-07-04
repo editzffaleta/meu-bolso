@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CsvStatementParser, StatementRow } from '@meubolso/imports';
+import {
+  CsvStatementParser,
+  StatementParseResult,
+  StatementRow,
+} from '@meubolso/imports';
 
 const DATE_COLUMN_SYNONYMS = ['data', 'date', 'dt'];
 const DESCRIPTION_COLUMN_SYNONYMS = [
@@ -14,25 +18,27 @@ const AMOUNT_COLUMN_SYNONYMS = ['valor', 'amount', 'value'];
 
 /**
  * Parser de extratos em CSV com header flexivel. Ver `design.md` da change
- * 008-importacao-extratos para o formato aceito (delimitador `,`, sinonimos
- * de coluna, formatos de data/valor).
+ * 008-importacao-extratos para o formato aceito (delimitador `,` ou `;`
+ * detectado automaticamente pelo header, campos entre aspas, sinonimos de
+ * coluna, formatos de data/valor).
  */
 @Injectable()
 export class CsvStatementParserImpl implements CsvStatementParser {
   // Parsing e sincrono; a assinatura e Promise por contrato da porta StatementParser.
   // eslint-disable-next-line @typescript-eslint/require-await
-  async parse(content: string): Promise<StatementRow[]> {
+  async parse(content: string): Promise<StatementParseResult> {
     const lines = content
       .split(/\r?\n/)
       .map((line) => line.trim())
       .filter((line) => line.length > 0);
 
     if (lines.length === 0) {
-      return [];
+      return { rows: [], invalidRows: 0 };
     }
 
     const [headerLine, ...dataLines] = lines;
-    const header = this.splitCsvLine(headerLine).map((column) =>
+    const delimiter = this.detectDelimiter(headerLine);
+    const header = this.tokenizeLine(headerLine, delimiter).map((column) =>
       this.normalizeColumnName(column),
     );
 
@@ -47,20 +53,21 @@ export class CsvStatementParserImpl implements CsvStatementParser {
     );
 
     if (dateIndex === -1 || descriptionIndex === -1 || amountIndex === -1) {
-      return [];
+      return { rows: [], invalidRows: 0 };
     }
 
-    const columnCount = header.length;
     const rows: StatementRow[] = [];
+    let invalidRows = 0;
 
     for (const line of dataLines) {
-      const columns = this.splitDataLine(line, columnCount, amountIndex);
+      const columns = this.tokenizeLine(line, delimiter);
 
       const rawDate = columns[dateIndex]?.trim();
       const rawDescription = columns[descriptionIndex]?.trim();
       const rawAmount = columns[amountIndex]?.trim();
 
       if (!rawDate || !rawDescription || !rawAmount) {
+        invalidRows += 1;
         continue;
       }
 
@@ -68,53 +75,94 @@ export class CsvStatementParserImpl implements CsvStatementParser {
       const amount = this.parseAmount(rawAmount);
 
       if (!date || amount === null) {
+        invalidRows += 1;
         continue;
       }
 
       rows.push({ date, description: rawDescription, amount });
     }
 
-    return rows;
-  }
-
-  private splitCsvLine(line: string): string[] {
-    return line.split(',').map((value) => value.trim());
+    return { rows, invalidRows };
   }
 
   /**
-   * Faz o split de uma linha de dados considerando que o valor monetario pode
-   * usar virgula como separador decimal (ex.: "1.234,56"), o que criaria uma
-   * coluna extra num split ingenuo por virgula. Quando ha mais campos do que
-   * colunas no header, junta o campo excedente de volta na coluna do valor
-   * (assumindo que o excedente e a parte decimal apos a virgula).
+   * Detecta o delimitador (`,` ou `;`) a partir da linha de header, contando
+   * qual dos dois caracteres aparece mais vezes fora de aspas.
    */
-  private splitDataLine(
-    line: string,
-    columnCount: number,
-    amountIndex: number,
-  ): string[] {
-    const rawColumns = this.splitCsvLine(line);
+  private detectDelimiter(headerLine: string): ',' | ';' {
+    let commaCount = 0;
+    let semicolonCount = 0;
+    let insideQuotes = false;
 
-    if (rawColumns.length <= columnCount) {
-      return rawColumns;
+    for (let i = 0; i < headerLine.length; i += 1) {
+      const char = headerLine[i];
+
+      if (char === '"') {
+        insideQuotes = !insideQuotes;
+        continue;
+      }
+
+      if (insideQuotes) {
+        continue;
+      }
+
+      if (char === ',') {
+        commaCount += 1;
+      } else if (char === ';') {
+        semicolonCount += 1;
+      }
     }
 
-    const extra = rawColumns.length - columnCount;
-    const merged = [
-      ...rawColumns.slice(0, amountIndex),
-      rawColumns.slice(amountIndex, amountIndex + extra + 1).join(','),
-      ...rawColumns.slice(amountIndex + extra + 1),
-    ];
+    return semicolonCount > commaCount ? ';' : ',';
+  }
 
-    return merged;
+  /**
+   * Tokeniza uma linha CSV respeitando campos entre aspas duplas (podendo
+   * conter o delimitador e quebras representadas por aspas escapadas `""`).
+   */
+  private tokenizeLine(line: string, delimiter: string): string[] {
+    const columns: string[] = [];
+    let current = '';
+    let insideQuotes = false;
+
+    for (let i = 0; i < line.length; i += 1) {
+      const char = line[i];
+
+      if (insideQuotes) {
+        if (char === '"') {
+          if (line[i + 1] === '"') {
+            current += '"';
+            i += 1;
+          } else {
+            insideQuotes = false;
+          }
+        } else {
+          current += char;
+        }
+        continue;
+      }
+
+      if (char === '"') {
+        insideQuotes = true;
+        continue;
+      }
+
+      if (char === delimiter) {
+        columns.push(current.trim());
+        current = '';
+        continue;
+      }
+
+      current += char;
+    }
+
+    columns.push(current.trim());
+
+    return columns;
   }
 
   private normalizeColumnName(column: string): string {
-    return column
-      .trim()
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
+    return column.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
   }
 
   private parseDate(raw: string): Date | null {

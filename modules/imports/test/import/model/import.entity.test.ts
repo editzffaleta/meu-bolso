@@ -16,6 +16,7 @@ function buildProps(overrides: Partial<ImportState> = {}): ImportState {
     totalRows: 0,
     importedRows: 0,
     duplicateRows: 0,
+    invalidRows: 0,
     userId: VALID_USER_ID,
     ...overrides,
   };
@@ -41,6 +42,7 @@ describe("Import entity", () => {
     expect(entity.totalRows).toBe(0);
     expect(entity.importedRows).toBe(0);
     expect(entity.duplicateRows).toBe(0);
+    expect(entity.invalidRows).toBe(0);
     expect(entity.userId).toBe(VALID_USER_ID);
     expect(entity.id).toBeDefined();
     expect(entity.createdAt).toBeInstanceOf(Date);
@@ -55,6 +57,7 @@ describe("Import entity", () => {
         totalRows: undefined as unknown as number,
         importedRows: undefined as unknown as number,
         duplicateRows: undefined as unknown as number,
+        invalidRows: undefined as unknown as number,
       }),
     );
 
@@ -62,6 +65,7 @@ describe("Import entity", () => {
     expect(entity.totalRows).toBe(0);
     expect(entity.importedRows).toBe(0);
     expect(entity.duplicateRows).toBe(0);
+    expect(entity.invalidRows).toBe(0);
     expect(() => entity.validate()).not.toThrow();
   });
 

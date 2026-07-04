@@ -13,8 +13,9 @@ describe('OfxStatementParserImpl', () => {
       '</STMTTRN>',
     ].join('\n');
 
-    const rows = await parser.parse(content);
+    const { rows, invalidRows } = await parser.parse(content);
 
+    expect(invalidRows).toBe(0);
     expect(rows).toHaveLength(1);
     expect(rows[0]).toEqual({
       date: new Date('2026-06-01T00:00:00.000Z'),
@@ -39,8 +40,9 @@ describe('OfxStatementParserImpl', () => {
       '</BANKTRANLIST>',
     ].join('\n');
 
-    const rows = await parser.parse(content);
+    const { rows, invalidRows } = await parser.parse(content);
 
+    expect(invalidRows).toBe(0);
     expect(rows).toHaveLength(2);
     expect(rows[0].description).toBe('Mercado Extra');
     expect(rows[0].date).toEqual(new Date('2026-06-01T00:00:00.000Z'));
@@ -57,23 +59,28 @@ describe('OfxStatementParserImpl', () => {
       '</STMTTRN>',
     ].join('\n');
 
-    const rows = await parser.parse(content);
+    const { rows, invalidRows } = await parser.parse(content);
 
+    expect(invalidRows).toBe(0);
     expect(rows).toHaveLength(1);
     expect(rows[0].description).toBe('Fallback Name');
   });
 
-  it('deve ignorar blocos sem DTPOSTED, TRNAMT ou MEMO/NAME', async () => {
+  it('deve contar em invalidRows blocos sem DTPOSTED, TRNAMT ou MEMO/NAME', async () => {
     const content = ['<STMTTRN>', '<TRNAMT>-10.00', '</STMTTRN>'].join('\n');
 
-    const rows = await parser.parse(content);
+    const { rows, invalidRows } = await parser.parse(content);
 
     expect(rows).toEqual([]);
+    expect(invalidRows).toBe(1);
   });
 
   it('deve retornar lista vazia quando nao ha blocos STMTTRN', async () => {
-    const rows = await parser.parse('conteudo sem tags relevantes');
+    const { rows, invalidRows } = await parser.parse(
+      'conteudo sem tags relevantes',
+    );
 
     expect(rows).toEqual([]);
+    expect(invalidRows).toBe(0);
   });
 });

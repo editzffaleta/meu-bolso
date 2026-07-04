@@ -300,7 +300,7 @@ describe("ImportStatement use case", () => {
     ).rejects.toThrow(NotFoundError);
   });
 
-  it("deve lancar ValidationError quando o arquivo nao possui linhas validas", async () => {
+  it("deve lancar ValidationError quando o arquivo nao possui linhas validas nem invalidas (vazio)", async () => {
     const { useCase } = buildUseCase({
       accounts: [buildAccount()],
       csvRows: [],
@@ -315,6 +315,53 @@ describe("ImportStatement use case", () => {
         content: "",
       }),
     ).rejects.toThrow(ValidationError);
+  });
+
+  it("deve computar invalidRows e manter totalRows = importedRows + duplicateRows + invalidRows", async () => {
+    const importRepository = new FakeImportRepository();
+    const transactionRepository = new FakeTransactionRepository([]);
+    const accountRepository = new FakeAccountRepository([buildAccount()]);
+    const csvParser = new FakeCsvStatementParser(
+      [
+        {
+          date: new Date("2026-06-01T00:00:00.000Z"),
+          description: "Mercado Extra",
+          amount: -150.32,
+        },
+      ],
+      3,
+    );
+    const ofxParser = new FakeOfxStatementParser([]);
+    const categorizationRuleRepository = new FakeCategorizationRuleRepository();
+
+    const useCase = new ImportStatement(
+      importRepository,
+      transactionRepository,
+      accountRepository,
+      csvParser,
+      ofxParser,
+      categorizationRuleRepository,
+    );
+
+    const result = await useCase.execute({
+      userId: USER_ID,
+      accountId: ACCOUNT_ID,
+      fileName: "extrato.csv",
+      format: "csv",
+      content: "irrelevante",
+    });
+
+    expect(result.invalidRows).toBe(3);
+    expect(result.importedRows).toBe(1);
+    expect(result.duplicateRows).toBe(0);
+    expect(result.totalRows).toBe(
+      result.importedRows + result.duplicateRows + result.invalidRows,
+    );
+
+    const persisted = importRepository.imports.find(
+      (item) => item.id === result.importId,
+    );
+    expect(persisted?.invalidRows).toBe(3);
   });
 
   it("deve categorizar automaticamente as transacoes criadas quando existe regra compativel (apply-rules ao final da importacao)", async () => {
@@ -343,12 +390,14 @@ describe("ImportStatement use case", () => {
       content: "irrelevante",
     });
 
-    // Contrato de saida de import-statement permanece inalterado.
+    // Contrato de saida de import-statement permanece inalterado (invalidRows
+    // e um campo aditivo).
     expect(result).toEqual({
       importId: result.importId,
       totalRows: 2,
       importedRows: 2,
       duplicateRows: 0,
+      invalidRows: 0,
     });
 
     const uberTransaction = transactionRepository.transactions.find(
