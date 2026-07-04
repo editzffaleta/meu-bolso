@@ -8,6 +8,8 @@ import { OfxStatementParser, StatementRow } from '@meubolso/imports';
  */
 @Injectable()
 export class OfxStatementParserImpl implements OfxStatementParser {
+  // Parsing e sincrono; a assinatura e Promise por contrato da porta StatementParser.
+  // eslint-disable-next-line @typescript-eslint/require-await
   async parse(content: string): Promise<StatementRow[]> {
     const blocks = this.extractBlocks(content);
     const rows: StatementRow[] = [];

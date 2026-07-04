@@ -19,6 +19,8 @@ const AMOUNT_COLUMN_SYNONYMS = ['valor', 'amount', 'value'];
  */
 @Injectable()
 export class CsvStatementParserImpl implements CsvStatementParser {
+  // Parsing e sincrono; a assinatura e Promise por contrato da porta StatementParser.
+  // eslint-disable-next-line @typescript-eslint/require-await
   async parse(content: string): Promise<StatementRow[]> {
     const lines = content
       .split(/\r?\n/)

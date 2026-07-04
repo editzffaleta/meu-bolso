@@ -56,6 +56,8 @@ export class ApiExceptionFilter implements ExceptionFilter {
 
     if (
       exception instanceof HttpException &&
+      // getStatus() retorna number; comparacao intencional com o status HTTP.
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
       exception.getStatus() === HttpStatus.PAYLOAD_TOO_LARGE
     ) {
       return {
