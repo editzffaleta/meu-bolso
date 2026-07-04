@@ -27,4 +27,12 @@ export const errorMessagesEn: ErrorMessages = {
   'user.password.bcrypt.hash': 'Unable to process the provided password.',
   'user.email.already.registered': 'This email is already registered.',
   'user.credentials.invalid': 'Invalid email or password.',
+  'account.name.required': 'Account name is required.',
+  'account.type.required': 'Account type is required.',
+  'account.type.in': 'Select a valid account type.',
+  'account.initialBalance.required': 'Initial balance is required.',
+  'account.initialBalance.precision': 'Initial balance must have at most 2 decimal places.',
+  'account.userId.required': 'Invalid user.',
+  'account.userId.uuid': 'Invalid user.',
+  'account.not.found': 'Account not found.',
 };

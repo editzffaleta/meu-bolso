@@ -7,5 +7,7 @@ model User {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
+  accounts Account[]
+
   @@map("users")
 }

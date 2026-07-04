@@ -1,0 +1,135 @@
+@baseUrl = http://localhost:4000
+@scenarioVersion = {{$timestamp}}
+
+### Cadastro do usuario 1 (dono das contas) -> 201 sem corpo
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Maria da Silva",
+  "email": "maria.contas.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Login do usuario 1 -> 200 com token
+# @name loginUser1
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "maria.contas.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Cadastro do usuario 2 (usado para validar isolamento) -> 201 sem corpo
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Joao Pereira",
+  "email": "joao.contas.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Login do usuario 2 -> 200 com token
+# @name loginUser2
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "joao.contas.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Criacao de conta com dados validos (usuario 1) -> 201 com a conta criada
+# @name createAccount
+POST {{baseUrl}}/accounts
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "name": "Conta corrente",
+  "type": "checking",
+  "institution": "Banco X",
+  "initialBalance": 100.5
+}
+
+### Criacao de conta com name vazio -> 422
+POST {{baseUrl}}/accounts
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "name": "",
+  "type": "checking"
+}
+
+### Criacao de conta com type fora do enum -> 422
+POST {{baseUrl}}/accounts
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "name": "Conta invalida",
+  "type": "bitcoin"
+}
+
+### Listagem de contas do usuario 1 -> 200 com apenas as contas do usuario 1
+GET {{baseUrl}}/accounts
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Listagem de contas do usuario 2 -> 200 lista vazia (isolamento)
+GET {{baseUrl}}/accounts
+Authorization: Bearer {{loginUser2.response.body.token}}
+
+### Busca por id da conta do usuario 1 -> 200 com a conta
+GET {{baseUrl}}/accounts/{{createAccount.response.body.id}}
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Busca por id de conta inexistente -> 404 account.not.found
+GET {{baseUrl}}/accounts/00000000-0000-4000-8000-000000000000
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Busca da conta do usuario 1 usando o token do usuario 2 -> 404 account.not.found (isolamento)
+GET {{baseUrl}}/accounts/{{createAccount.response.body.id}}
+Authorization: Bearer {{loginUser2.response.body.token}}
+
+### Atualizacao da conta do usuario 1 -> 200 com a conta atualizada
+PATCH {{baseUrl}}/accounts/{{createAccount.response.body.id}}
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "name": "Conta corrente atualizada",
+  "initialBalance": 250.75
+}
+
+### Atualizacao com dados invalidos (name vazio) -> 422
+PATCH {{baseUrl}}/accounts/{{createAccount.response.body.id}}
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "name": ""
+}
+
+### Atualizacao da conta do usuario 1 usando o token do usuario 2 -> 404 account.not.found (isolamento)
+PATCH {{baseUrl}}/accounts/{{createAccount.response.body.id}}
+Content-Type: application/json
+Authorization: Bearer {{loginUser2.response.body.token}}
+
+{
+  "name": "Tentativa de invasao"
+}
+
+### Exclusao de conta inexistente -> 404 account.not.found
+DELETE {{baseUrl}}/accounts/00000000-0000-4000-8000-000000000000
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Exclusao da conta do usuario 1 usando o token do usuario 2 -> 404 account.not.found (isolamento)
+DELETE {{baseUrl}}/accounts/{{createAccount.response.body.id}}
+Authorization: Bearer {{loginUser2.response.body.token}}
+
+### Exclusao da conta do usuario 1 -> 204 sem corpo
+DELETE {{baseUrl}}/accounts/{{createAccount.response.body.id}}
+Authorization: Bearer {{loginUser1.response.body.token}}

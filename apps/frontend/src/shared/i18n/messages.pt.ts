@@ -25,6 +25,14 @@ export const errorMessagesPt = {
   'user.password.bcrypt.hash': 'Não foi possível processar a senha informada.',
   'user.email.already.registered': 'Este e-mail já está cadastrado.',
   'user.credentials.invalid': 'E-mail ou senha inválidos.',
+  'account.name.required': 'O nome da conta é obrigatório.',
+  'account.type.required': 'O tipo da conta é obrigatório.',
+  'account.type.in': 'Selecione um tipo de conta válido.',
+  'account.initialBalance.required': 'O saldo inicial é obrigatório.',
+  'account.initialBalance.precision': 'O saldo inicial deve ter no máximo 2 casas decimais.',
+  'account.userId.required': 'Usuário inválido.',
+  'account.userId.uuid': 'Usuário inválido.',
+  'account.not.found': 'Conta não encontrada.',
 } as const;
 
 export type ErrorMessageKey = keyof typeof errorMessagesPt;
