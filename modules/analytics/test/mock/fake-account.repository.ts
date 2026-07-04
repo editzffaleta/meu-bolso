@@ -1,4 +1,4 @@
-import { Account, AccountRepository } from "../../src";
+import { Account, AccountRepository } from "@meubolso/accounts";
 
 export class FakeAccountRepository implements AccountRepository {
   private readonly storage = new Map<string, Account>();

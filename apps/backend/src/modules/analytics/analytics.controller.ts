@@ -1,5 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import {
+  ConsolidatedBalanceOut,
+  GetConsolidatedBalance,
   GetMonthlyEvolution,
   GetSpendingByCategory,
   GetSummary,
@@ -11,6 +13,7 @@ import {
 } from '@meubolso/analytics';
 import { ValidationError, ValidationException } from '@meubolso/shared';
 import { CurrentUser } from '../../shared/decorators';
+import { PrismaAccountRepository } from '../accounts/account.prisma';
 import { PrismaCategoryRepository } from '../categories/category.prisma';
 import { PrismaTransactionRepository } from '../transactions/transaction.prisma';
 
@@ -34,6 +37,7 @@ export class AnalyticsController {
   constructor(
     private readonly transactionRepository: PrismaTransactionRepository,
     private readonly categoryRepository: PrismaCategoryRepository,
+    private readonly accountRepository: PrismaAccountRepository,
   ) {}
 
   @Get('summary')
@@ -75,6 +79,18 @@ export class AnalyticsController {
     const useCase = new GetMonthlyEvolution(this.transactionRepository);
 
     return useCase.execute({ userId, months });
+  }
+
+  @Get('consolidated-balance')
+  async consolidatedBalance(
+    @CurrentUser('id') userId: string,
+  ): Promise<ConsolidatedBalanceOut> {
+    const useCase = new GetConsolidatedBalance(
+      this.accountRepository,
+      this.transactionRepository,
+    );
+
+    return useCase.execute({ userId });
   }
 }
 

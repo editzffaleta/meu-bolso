@@ -18,4 +18,10 @@ export interface AccountRepository {
    * Lista todas as contas pertencentes ao usuario informado.
    */
   findAll(userId: string): Promise<Account[]>;
+
+  /**
+   * Soma, no banco, o `initialBalance` de todas as contas do usuario
+   * informado. Usado pelo saldo consolidado real (auditoria M10).
+   */
+  sumInitialBalance(userId: string): Promise<number>;
 }

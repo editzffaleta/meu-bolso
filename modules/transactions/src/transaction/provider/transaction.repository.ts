@@ -114,6 +114,14 @@ export interface TransactionRepository {
     from: Date,
     to: Date,
   ): Promise<MonthlyTransactionSummary[]>;
+
+  /**
+   * Soma, escopado ao usuario, o total de receitas (`type=income`) e
+   * despesas (`type=expense`) de TODAS as transacoes do usuario (all-time,
+   * sem filtro de periodo). Usado pelo saldo consolidado real (auditoria
+   * M10) para nao ignorar transacoes fora do mes corrente.
+   */
+  sumAllTime(userId: string): Promise<TransactionTypeSummary>;
 }
 
 export interface TransactionTypeSummary {

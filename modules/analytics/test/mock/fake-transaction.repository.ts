@@ -172,6 +172,25 @@ export class FakeTransactionRepository implements TransactionRepository {
     return Array.from(totals.values());
   }
 
+  async sumAllTime(userId: string): Promise<TransactionTypeSummary> {
+    const scoped = this.transactions.filter(
+      (transaction) => transaction.userId === userId,
+    );
+
+    return scoped.reduce<TransactionTypeSummary>(
+      (acc, transaction) => {
+        if (transaction.type === "income") {
+          acc.income += transaction.amount;
+        } else {
+          acc.expense += transaction.amount;
+        }
+        acc.count += 1;
+        return acc;
+      },
+      { income: 0, expense: 0, count: 0 },
+    );
+  }
+
   private inRange(userId: string, from: Date, to: Date): Transaction[] {
     return this.transactions.filter(
       (transaction) =>

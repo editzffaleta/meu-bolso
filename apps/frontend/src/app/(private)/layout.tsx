@@ -1,11 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { MeuBolsoShell } from '@/shared/template/meu-bolso-shell.component';
 import { AuthGuard } from '@/modules/auth/guard/auth.guard';
 import { useAuth } from '@/modules/auth/context/auth.context';
-import { listAccounts } from '@/modules/accounts/util/accounts-api.util';
+import { getConsolidatedBalance } from '@/modules/analytics/util/analytics-api.util';
 
 export default function PrivateGroupLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -17,24 +17,30 @@ export default function PrivateGroupLayout({ children }: { children: React.React
 
 function PrivateShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, token, logout } = useAuth();
   const [saldoConsolidado, setSaldoConsolidado] = useState<number | null>(null);
 
-  const loadSaldo = useCallback(async () => {
-    if (!token) return;
-    try {
-      const accounts = await listAccounts(token);
-      const total = accounts.reduce((sum, account) => sum + account.initialBalance, 0);
-      setSaldoConsolidado(total);
-    } catch {
-      setSaldoConsolidado(null);
-    }
-  }, [token]);
+  const loadSaldo = useCallback(
+    async (signal?: AbortSignal) => {
+      if (!token) return;
+      try {
+        const { balance } = await getConsolidatedBalance(token, signal);
+        setSaldoConsolidado(balance);
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') return;
+        // mantém o último valor conhecido em caso de erro, evitando "sumiço" do saldo
+      }
+    },
+    [token],
+  );
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- carregamento inicial de dados via API externa
-    loadSaldo();
-  }, [loadSaldo]);
+    const controller = new AbortController();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- refetch ao navegar entre rotas privadas
+    loadSaldo(controller.signal);
+    return () => controller.abort();
+  }, [loadSaldo, pathname]);
 
   function handleLogout() {
     logout();
