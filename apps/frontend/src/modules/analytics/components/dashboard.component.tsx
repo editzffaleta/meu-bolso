@@ -77,36 +77,42 @@ export default function DashboardComponent() {
   const [isLoading, setIsLoading] = useState(true);
   const [hasAnyTransactionEver, setHasAnyTransactionEver] = useState<boolean | null>(null);
 
-  const loadData = useCallback(async () => {
-    if (!token) return;
+  const loadData = useCallback(
+    async (signal?: AbortSignal) => {
+      if (!token) return;
 
-    setIsLoading(true);
-    try {
-      const [summaryData, spendingData, evolutionData, transactionsData] = await Promise.all([
-        getSummary(token, month),
-        getSpendingByCategory(token, month),
-        getMonthlyEvolution(token, EVOLUTION_MONTHS),
-        listTransactions(token, { page: 1, pageSize: RECENT_TRANSACTIONS_LIMIT }),
-      ]);
+      setIsLoading(true);
+      try {
+        const [summaryData, spendingData, evolutionData, transactionsData] = await Promise.all([
+          getSummary(token, month, signal),
+          getSpendingByCategory(token, month, signal),
+          getMonthlyEvolution(token, EVOLUTION_MONTHS, signal),
+          listTransactions(token, { page: 1, pageSize: RECENT_TRANSACTIONS_LIMIT }, signal),
+        ]);
 
-      setSummary(summaryData);
-      setSpendingByCategory(spendingData);
-      setMonthlyEvolution(evolutionData);
-      setRecentTransactions(transactionsData.items);
-      setHasAnyTransactionEver(transactionsData.total > 0);
+        setSummary(summaryData);
+        setSpendingByCategory(spendingData);
+        setMonthlyEvolution(evolutionData);
+        setRecentTransactions(transactionsData.items);
+        setHasAnyTransactionEver(transactionsData.total > 0);
 
-      const categoriesData = await listCategories(token);
-      setCategories(categoriesData);
-    } catch (error) {
-      reportApiErrors(error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [token, month]);
+        const categoriesData = await listCategories(token, signal);
+        setCategories(categoriesData);
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') return;
+        reportApiErrors(error);
+      } finally {
+        if (!signal?.aborted) setIsLoading(false);
+      }
+    },
+    [token, month],
+  );
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- carregamento inicial de dados via API externa
-    loadData();
+    const controller = new AbortController();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- carregamento de dados via API externa a cada troca de mês
+    loadData(controller.signal);
+    return () => controller.abort();
   }, [loadData]);
 
   const categoriesById = useMemo(() => {

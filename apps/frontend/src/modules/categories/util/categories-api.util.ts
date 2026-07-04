@@ -10,8 +10,8 @@ export type CreateCategoryPayload = {
 
 export type UpdateCategoryPayload = Partial<CreateCategoryPayload>;
 
-export async function listCategories(token: string): Promise<Category[]> {
-  return apiRequest<Category[]>('/categories', { method: 'GET', token, expectedStatus: 200 });
+export async function listCategories(token: string, signal?: AbortSignal): Promise<Category[]> {
+  return apiRequest<Category[]>('/categories', { method: 'GET', token, expectedStatus: 200, signal });
 }
 
 export async function seedDefaultCategories(token: string): Promise<SeedDefaultCategoriesResult> {

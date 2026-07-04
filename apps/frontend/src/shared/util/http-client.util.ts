@@ -53,6 +53,7 @@ export type ApiRequestOptions = {
   token?: string;
   body?: RequestBody;
   expectedStatus?: number;
+  signal?: AbortSignal;
 };
 
 function buildHeaders(token: string | undefined, body: RequestBody): HeadersInit {
@@ -70,12 +71,13 @@ function buildHeaders(token: string | undefined, body: RequestBody): HeadersInit
 }
 
 export async function apiRequest<T>(path: string, options: ApiRequestOptions): Promise<T> {
-  const { method, token, body, expectedStatus } = options;
+  const { method, token, body, expectedStatus, signal } = options;
 
   const response = await fetch(`${API_URL}${path}`, {
     method,
     headers: buildHeaders(token, body),
     body: body instanceof FormData ? body : body !== undefined ? JSON.stringify(body) : undefined,
+    signal,
   });
 
   const isExpected = expectedStatus ? response.status === expectedStatus : response.ok;
