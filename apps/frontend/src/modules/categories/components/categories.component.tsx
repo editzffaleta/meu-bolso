@@ -11,16 +11,16 @@ import { CategoryFormDialog } from '@/modules/categories/components/category-for
 import { CategoryListItem } from '@/modules/categories/components/category-list-item.component';
 import type { Category, CategoryFormValues } from '@/modules/categories/types/category.type';
 import {
-  CategoriesApiError,
   createCategory,
   deleteCategory,
   listCategories,
   seedDefaultCategories,
   updateCategory,
 } from '@/modules/categories/util/categories-api.util';
+import { ApiError } from '@/shared/util/http-client.util';
 
 function reportApiErrors(error: unknown) {
-  if (error instanceof CategoriesApiError) {
+  if (error instanceof ApiError) {
     error.errors.forEach((code) => toast.error(getMessage(code)));
     return;
   }

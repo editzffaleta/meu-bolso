@@ -6,9 +6,9 @@ import { Icon } from '@/shared/components/ui/icon';
 import { DeleteConfirmationDialog } from '@/shared/components/ui/delete-confirmation-dialog';
 import { getMessage } from '@/shared/i18n';
 import { useAuth } from '@/modules/auth/context/auth.context';
-import { listAccounts, AccountsApiError } from '@/modules/accounts/util/accounts-api.util';
+import { listAccounts } from '@/modules/accounts/util/accounts-api.util';
 import type { Account } from '@/modules/accounts/types/account.type';
-import { listCategories, CategoriesApiError } from '@/modules/categories/util/categories-api.util';
+import { listCategories } from '@/modules/categories/util/categories-api.util';
 import type { Category } from '@/modules/categories/types/category.type';
 import { TransactionFiltersBar } from '@/modules/transactions/components/transaction-filters-bar.component';
 import { TransactionFormDialog } from '@/modules/transactions/components/transaction-form-dialog.component';
@@ -20,12 +20,12 @@ import {
   type TransactionFormValues,
 } from '@/modules/transactions/types/transaction.type';
 import {
-  TransactionsApiError,
   createTransaction,
   deleteTransaction,
   listTransactions,
   updateTransaction,
 } from '@/modules/transactions/util/transactions-api.util';
+import { ApiError } from '@/shared/util/http-client.util';
 
 const EMPTY_FILTERS: TransactionFilters = {
   from: '',
@@ -36,11 +36,7 @@ const EMPTY_FILTERS: TransactionFilters = {
 };
 
 function reportApiErrors(error: unknown) {
-  if (
-    error instanceof TransactionsApiError ||
-    error instanceof AccountsApiError ||
-    error instanceof CategoriesApiError
-  ) {
+  if (error instanceof ApiError) {
     error.errors.forEach((code) => toast.error(getMessage(code)));
     return;
   }
