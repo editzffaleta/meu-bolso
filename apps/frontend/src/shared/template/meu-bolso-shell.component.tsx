@@ -44,7 +44,7 @@ export function MeuBolsoShell({ children, userName, userEmail, saldoConsolidado,
   const themeIcon = theme === 'dark' ? 'light_mode' : 'dark_mode';
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
+    <div data-testid="app-shell" style={{ display: 'flex', minHeight: '100vh' }}>
       {/* SIDEBAR */}
       <aside
         style={{

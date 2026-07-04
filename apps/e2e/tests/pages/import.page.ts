@@ -9,8 +9,7 @@ export class ImportPage {
   }
 
   async selectAccountByName(accountName: string) {
-    await this.page.getByTestId('import-account-select').click();
-    await this.page.getByRole('button', { name: new RegExp(accountName, 'i') }).click();
+    await this.page.getByTestId('import-account-select').selectOption({ label: accountName });
   }
 
   async uploadStatement(filePath: string) {
