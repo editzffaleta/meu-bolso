@@ -12,6 +12,7 @@ import { AccountsModule } from './modules/accounts/accounts.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import { ImportsModule } from './modules/imports/imports.module';
+import { BudgetsModule } from './modules/budgets/budgets.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { ImportsModule } from './modules/imports/imports.module';
     CategoriesModule,
     TransactionsModule,
     ImportsModule,
+    BudgetsModule,
   ],
   controllers: [AppController],
   providers: [

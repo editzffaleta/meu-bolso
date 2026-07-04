@@ -73,6 +73,18 @@ export const errorMessagesPt = {
   'categorization-rule.userId.uuid': 'Usuário inválido.',
   'categorization-rule.not.found': 'Regra de categorização não encontrada.',
   'categorization-rule.category.not.found': 'Categoria não encontrada.',
+  'budget.categoryId.required': 'A categoria é obrigatória.',
+  'budget.categoryId.uuid': 'Selecione uma categoria válida.',
+  'budget.month.required': 'O mês é obrigatório.',
+  'budget.month.regex': 'Informe o mês no formato AAAA-MM.',
+  'budget.month': 'Informe o mês no formato AAAA-MM.',
+  'budget.limitAmount.required': 'O limite é obrigatório.',
+  'budget.limitAmount.positive': 'O limite deve ser maior que zero.',
+  'budget.userId.required': 'Usuário inválido.',
+  'budget.userId.uuid': 'Usuário inválido.',
+  'budget.category.not.found': 'Categoria não encontrada.',
+  'budget.already.exists': 'Já existe um orçamento para essa categoria neste mês. Edite o orçamento existente.',
+  'budget.not.found': 'Orçamento não encontrado.',
 } as const;
 
 export type ErrorMessageKey = keyof typeof errorMessagesPt;

@@ -13,6 +13,7 @@ model Category {
 
   transactions        Transaction[]
   categorizationRules CategorizationRule[]
+  budgets             Budget[]
 
   @@index([userId])
   @@map("categories")

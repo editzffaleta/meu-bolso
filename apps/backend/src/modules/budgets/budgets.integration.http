@@ -1,0 +1,206 @@
+@baseUrl = http://localhost:4000
+@scenarioVersion = {{$timestamp}}
+
+### Cadastro do usuario 1 (dono dos orcamentos) -> 201 sem corpo
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Maria da Silva",
+  "email": "maria.orcamentos.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Login do usuario 1 -> 200 com token
+# @name loginUser1
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "maria.orcamentos.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Cadastro do usuario 2 (usado para validar isolamento) -> 201 sem corpo
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Joao Pereira",
+  "email": "joao.orcamentos.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Login do usuario 2 -> 200 com token
+# @name loginUser2
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "joao.orcamentos.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Criacao de conta do usuario 1 -> 201
+# @name createAccountUser1
+POST {{baseUrl}}/accounts
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "name": "Carteira",
+  "type": "wallet",
+  "initialBalance": 0
+}
+
+### Criacao de categoria do usuario 1 -> 201
+# @name createCategoryUser1
+POST {{baseUrl}}/categories
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "name": "Mercado",
+  "type": "expense",
+  "color": "#059669"
+}
+
+### Criacao de categoria do usuario 2 (para tentativa de invasao) -> 201
+# @name createCategoryUser2
+POST {{baseUrl}}/categories
+Content-Type: application/json
+Authorization: Bearer {{loginUser2.response.body.token}}
+
+{
+  "name": "Mercado do Joao",
+  "type": "expense",
+  "color": "#059669"
+}
+
+### Criacao de orcamento valido (usuario 1) -> 201
+# @name createBudget
+POST {{baseUrl}}/budgets
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "categoryId": "{{createCategoryUser1.response.body.id}}",
+  "month": "2026-07",
+  "limitAmount": 500
+}
+
+### Criacao de orcamento duplicado (mesmo trio userId+categoryId+month) -> 409 budget.already.exists
+POST {{baseUrl}}/budgets
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "categoryId": "{{createCategoryUser1.response.body.id}}",
+  "month": "2026-07",
+  "limitAmount": 300
+}
+
+### Criacao de orcamento com categoryId de outro usuario -> 404 budget.category.not.found
+POST {{baseUrl}}/budgets
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "categoryId": "{{createCategoryUser2.response.body.id}}",
+  "month": "2026-07",
+  "limitAmount": 500
+}
+
+### Criacao de orcamento com month em formato invalido -> 422
+POST {{baseUrl}}/budgets
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "categoryId": "{{createCategoryUser1.response.body.id}}",
+  "month": "2026-13",
+  "limitAmount": 500
+}
+
+### Criacao de orcamento com limitAmount negativo -> 422
+POST {{baseUrl}}/budgets
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "categoryId": "{{createCategoryUser1.response.body.id}}",
+  "month": "2026-07",
+  "limitAmount": -10
+}
+
+### Criacao de transacao expense na categoria/mes do orcamento (usuario 1) -> 201
+POST {{baseUrl}}/transactions
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "date": "2026-07-10T00:00:00.000Z",
+  "description": "Compras do mes",
+  "type": "expense",
+  "amount": 250,
+  "accountId": "{{createAccountUser1.response.body.id}}",
+  "categoryId": "{{createCategoryUser1.response.body.id}}"
+}
+
+### Listagem de orcamentos do usuario 1 -> 200 com o orcamento criado
+GET {{baseUrl}}/budgets
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Listagem de orcamentos do usuario 2 -> 200 lista vazia (isolamento)
+GET {{baseUrl}}/budgets
+Authorization: Bearer {{loginUser2.response.body.token}}
+
+### Listagem de orcamentos filtrando por mes -> 200
+GET {{baseUrl}}/budgets?month=2026-07
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Progresso do mes 2026-07 (usuario 1) -> 200 com spent=250, limit=500, percent=50
+GET {{baseUrl}}/budgets/progress?month=2026-07
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Progresso do mes 2026-07 (usuario 2) -> 200 lista vazia (isolamento)
+GET {{baseUrl}}/budgets/progress?month=2026-07
+Authorization: Bearer {{loginUser2.response.body.token}}
+
+### Progresso com month invalido -> 422
+GET {{baseUrl}}/budgets/progress?month=2026-13
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Progresso sem month explicito -> 200 usa o mes atual do servidor
+GET {{baseUrl}}/budgets/progress
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Atualizacao do orcamento do usuario 1 -> 200 com limitAmount atualizado
+PATCH {{baseUrl}}/budgets/{{createBudget.response.body.id}}
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "limitAmount": 900
+}
+
+### Atualizacao do orcamento do usuario 1 usando o token do usuario 2 -> 404 budget.not.found (isolamento)
+PATCH {{baseUrl}}/budgets/{{createBudget.response.body.id}}
+Content-Type: application/json
+Authorization: Bearer {{loginUser2.response.body.token}}
+
+{
+  "limitAmount": 100
+}
+
+### Exclusao de orcamento inexistente -> 404 budget.not.found
+DELETE {{baseUrl}}/budgets/00000000-0000-4000-8000-000000000000
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Exclusao do orcamento do usuario 1 usando o token do usuario 2 -> 404 budget.not.found (isolamento)
+DELETE {{baseUrl}}/budgets/{{createBudget.response.body.id}}
+Authorization: Bearer {{loginUser2.response.body.token}}
+
+### Exclusao do orcamento do usuario 1 -> 204 sem corpo
+DELETE {{baseUrl}}/budgets/{{createBudget.response.body.id}}
+Authorization: Bearer {{loginUser1.response.body.token}}

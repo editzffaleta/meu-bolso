@@ -12,6 +12,7 @@
     "@hookform/resolvers": "^5.4.0",
     "@meubolso/accounts": "*",
     "@meubolso/auth": "*",
+    "@meubolso/budgets": "*",
     "@meubolso/categories": "*",
     "@meubolso/imports": "*",
     "@meubolso/transactions": "*",
