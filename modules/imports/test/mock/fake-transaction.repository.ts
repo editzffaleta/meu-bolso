@@ -73,4 +73,24 @@ export class FakeTransactionRepository implements TransactionRepository {
 
     return fingerprints.filter((fingerprint) => owned.has(fingerprint));
   }
+
+  async findByIds(ids: string[], userId: string): Promise<Transaction[]> {
+    const idSet = new Set(ids);
+
+    return this.transactions.filter(
+      (transaction) => transaction.userId === userId && idSet.has(transaction.id),
+    );
+  }
+
+  async findAllWithoutCategory(userId: string): Promise<Transaction[]> {
+    return this.transactions.filter(
+      (transaction) => transaction.userId === userId && !transaction.categoryId,
+    );
+  }
+
+  async findAllByUser(userId: string): Promise<Transaction[]> {
+    return this.transactions.filter(
+      (transaction) => transaction.userId === userId,
+    );
+  }
 }

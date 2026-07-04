@@ -115,6 +115,34 @@ export class PrismaTransactionRepository implements TransactionRepository {
     return found.map((item) => item.fingerprint);
   }
 
+  async findByIds(ids: string[], userId: string): Promise<Transaction[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+
+    const found = await this.prisma.transaction.findMany({
+      where: { userId, id: { in: ids } },
+    });
+
+    return found.map((item) => this.toDomain(item));
+  }
+
+  async findAllWithoutCategory(userId: string): Promise<Transaction[]> {
+    const found = await this.prisma.transaction.findMany({
+      where: { userId, categoryId: null },
+    });
+
+    return found.map((item) => this.toDomain(item));
+  }
+
+  async findAllByUser(userId: string): Promise<Transaction[]> {
+    const found = await this.prisma.transaction.findMany({
+      where: { userId },
+    });
+
+    return found.map((item) => this.toDomain(item));
+  }
+
   private toPersistence(transaction: Transaction) {
     return {
       id: transaction.id,

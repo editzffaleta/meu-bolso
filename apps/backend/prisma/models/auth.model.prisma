@@ -7,10 +7,11 @@ model User {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  accounts     Account[]
-  categories   Category[]
-  transactions Transaction[]
-  imports      Import[]
+  accounts            Account[]
+  categories          Category[]
+  transactions        Transaction[]
+  imports             Import[]
+  categorizationRules CategorizationRule[]
 
   @@map("users")
 }

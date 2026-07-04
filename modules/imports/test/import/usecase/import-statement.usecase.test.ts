@@ -1,9 +1,11 @@
 import { NotFoundError, ValidationError } from "@meubolso/shared";
 import { Account } from "@meubolso/accounts";
 import { Transaction } from "@meubolso/transactions";
+import { CategorizationRule } from "@meubolso/categories";
 import { ImportStatement } from "../../../src/import/usecase/import-statement.usecase";
 import {
   FakeAccountRepository,
+  FakeCategorizationRuleRepository,
   FakeCsvStatementParser,
   FakeImportRepository,
   FakeOfxStatementParser,
@@ -13,6 +15,18 @@ import {
 const USER_ID = "11111111-1111-4111-8111-111111111111";
 const OTHER_USER_ID = "99999999-9999-4999-8999-999999999999";
 const ACCOUNT_ID = "22222222-2222-4222-8222-222222222222";
+const TRANSPORT_CATEGORY_ID = "33333333-3333-4333-8333-333333333333";
+
+function buildCategorizationRule(
+  overrides: Partial<{ keyword: string; categoryId: string }> = {},
+): CategorizationRule {
+  return new CategorizationRule({
+    keyword: overrides.keyword ?? "uber",
+    categoryId: overrides.categoryId ?? TRANSPORT_CATEGORY_ID,
+    priority: 0,
+    userId: USER_ID,
+  });
+}
 
 function buildAccount(overrides: Partial<{ userId: string }> = {}): Account {
   return new Account({
@@ -29,6 +43,7 @@ function buildUseCase(options: {
   transactions?: Transaction[];
   csvRows?: { date: Date; description: string; amount: number }[];
   ofxRows?: { date: Date; description: string; amount: number }[];
+  categorizationRules?: CategorizationRule[];
 }) {
   const importRepository = new FakeImportRepository();
   const transactionRepository = new FakeTransactionRepository(
@@ -37,6 +52,9 @@ function buildUseCase(options: {
   const accountRepository = new FakeAccountRepository(options.accounts ?? []);
   const csvParser = new FakeCsvStatementParser(options.csvRows ?? []);
   const ofxParser = new FakeOfxStatementParser(options.ofxRows ?? []);
+  const categorizationRuleRepository = new FakeCategorizationRuleRepository(
+    options.categorizationRules ?? [],
+  );
 
   const useCase = new ImportStatement(
     importRepository,
@@ -44,9 +62,16 @@ function buildUseCase(options: {
     accountRepository,
     csvParser,
     ofxParser,
+    categorizationRuleRepository,
   );
 
-  return { useCase, importRepository, transactionRepository, accountRepository };
+  return {
+    useCase,
+    importRepository,
+    transactionRepository,
+    accountRepository,
+    categorizationRuleRepository,
+  };
 }
 
 describe("ImportStatement use case", () => {
@@ -169,6 +194,7 @@ describe("ImportStatement use case", () => {
         },
       ]);
       const ofxParser = new FakeOfxStatementParser([]);
+      const categorizationRuleRepository = new FakeCategorizationRuleRepository();
 
       return {
         useCase: new ImportStatement(
@@ -177,6 +203,7 @@ describe("ImportStatement use case", () => {
           accountRepository,
           csvParser,
           ofxParser,
+          categorizationRuleRepository,
         ),
       };
     })();
@@ -288,5 +315,102 @@ describe("ImportStatement use case", () => {
         content: "",
       }),
     ).rejects.toThrow(ValidationError);
+  });
+
+  it("deve categorizar automaticamente as transacoes criadas quando existe regra compativel (apply-rules ao final da importacao)", async () => {
+    const { useCase, transactionRepository } = buildUseCase({
+      accounts: [buildAccount()],
+      csvRows: [
+        {
+          date: new Date("2026-06-01T00:00:00.000Z"),
+          description: "UBER *TRIP",
+          amount: -25.9,
+        },
+        {
+          date: new Date("2026-06-02T00:00:00.000Z"),
+          description: "Supermercado ABC",
+          amount: -80,
+        },
+      ],
+      categorizationRules: [buildCategorizationRule({ keyword: "uber" })],
+    });
+
+    const result = await useCase.execute({
+      userId: USER_ID,
+      accountId: ACCOUNT_ID,
+      fileName: "extrato.csv",
+      format: "csv",
+      content: "irrelevante",
+    });
+
+    // Contrato de saida de import-statement permanece inalterado.
+    expect(result).toEqual({
+      importId: result.importId,
+      totalRows: 2,
+      importedRows: 2,
+      duplicateRows: 0,
+    });
+
+    const uberTransaction = transactionRepository.transactions.find(
+      (transaction) => transaction.description === "UBER *TRIP",
+    );
+    const marketTransaction = transactionRepository.transactions.find(
+      (transaction) => transaction.description === "Supermercado ABC",
+    );
+
+    expect(uberTransaction?.categoryId).toBe(TRANSPORT_CATEGORY_ID);
+    expect(marketTransaction?.categoryId).toBeUndefined();
+  });
+
+  it("nao deve chamar apply-rules quando nenhuma transacao foi criada (todas duplicadas)", async () => {
+    const csvRows = [
+      {
+        date: new Date("2026-06-01T00:00:00.000Z"),
+        description: "Mercado Extra",
+        amount: -150.32,
+      },
+    ];
+
+    const { useCase: firstRunUseCase, transactionRepository } = buildUseCase({
+      accounts: [buildAccount()],
+      csvRows,
+      categorizationRules: [buildCategorizationRule({ keyword: "mercado" })],
+    });
+
+    await firstRunUseCase.execute({
+      userId: USER_ID,
+      accountId: ACCOUNT_ID,
+      fileName: "extrato.csv",
+      format: "csv",
+      content: "irrelevante",
+    });
+
+    const categorizationRuleRepository = new FakeCategorizationRuleRepository([
+      buildCategorizationRule({ keyword: "mercado" }),
+    ]);
+    const findAllByUserSpy = jest.spyOn(
+      categorizationRuleRepository,
+      "findAllByUser",
+    );
+
+    const secondRunUseCase = new ImportStatement(
+      new FakeImportRepository(),
+      transactionRepository,
+      new FakeAccountRepository([buildAccount()]),
+      new FakeCsvStatementParser(csvRows),
+      new FakeOfxStatementParser([]),
+      categorizationRuleRepository,
+    );
+
+    const result = await secondRunUseCase.execute({
+      userId: USER_ID,
+      accountId: ACCOUNT_ID,
+      fileName: "extrato.csv",
+      format: "csv",
+      content: "irrelevante",
+    });
+
+    expect(result.importedRows).toBe(0);
+    expect(findAllByUserSpy).not.toHaveBeenCalled();
   });
 });

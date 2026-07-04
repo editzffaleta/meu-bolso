@@ -19,6 +19,7 @@
   "dependencies": {
     "@meubolso/accounts": "*",
     "@meubolso/transactions": "*",
+    "@meubolso/categories": "*",
     "@meubolso/shared": "^1.0.0"
   },
   "devDependencies": {

@@ -8,6 +8,7 @@ import { DeleteConfirmationDialog } from '@/shared/components/ui/delete-confirma
 import { PageSectionHeader } from '@/shared/components/ui/page-section-header';
 import { getMessage } from '@/shared/i18n';
 import { useAuth } from '@/modules/auth/context/auth.context';
+import { CategorizationRulesComponent } from '@/modules/categories/components/categorization-rules.component';
 import { CategoryFormDialog } from '@/modules/categories/components/category-form-dialog.component';
 import { CategoryListItem } from '@/modules/categories/components/category-list-item.component';
 import type { Category, CategoryFormValues } from '@/modules/categories/types/category.type';
@@ -135,22 +136,26 @@ export default function CategoriesComponent() {
         }
       />
 
-      {isLoading ? (
-        <CategoriesSkeleton />
-      ) : categories.length === 0 ? (
-        <EmptyCategoriesState onCreate={handleOpenCreate} />
-      ) : (
-        <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-          {categories.map((category) => (
-            <CategoryListItem
-              key={category.id}
-              category={category}
-              onEdit={handleOpenEdit}
-              onDelete={setCategoryPendingDeletion}
-            />
-          ))}
-        </div>
-      )}
+      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
+        {isLoading ? (
+          <CategoriesSkeleton />
+        ) : categories.length === 0 ? (
+          <EmptyCategoriesState onCreate={handleOpenCreate} />
+        ) : (
+          <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+            {categories.map((category) => (
+              <CategoryListItem
+                key={category.id}
+                category={category}
+                onEdit={handleOpenEdit}
+                onDelete={setCategoryPendingDeletion}
+              />
+            ))}
+          </div>
+        )}
+
+        <CategorizationRulesComponent categories={categories} />
+      </div>
 
       <CategoryFormDialog
         open={isFormOpen}

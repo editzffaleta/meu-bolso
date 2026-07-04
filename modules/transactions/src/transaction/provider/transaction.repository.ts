@@ -46,4 +46,24 @@ export interface TransactionRepository {
    * fingerprints encontrados.
    */
   findByFingerprints(userId: string, fingerprints: string[]): Promise<string[]>;
+
+  /**
+   * Busca transacoes do usuario pelos ids informados (usado pela
+   * categorizacao automatica - 009 - para avaliar um conjunto especifico
+   * de transacoes recem-criadas por uma importacao).
+   */
+  findByIds(ids: string[], userId: string): Promise<Transaction[]>;
+
+  /**
+   * Lista todas as transacoes do usuario que ainda nao possuem `categoryId`
+   * (usado pela categorizacao automatica - 009 - para recategorizar em
+   * massa quando nenhum `transactionIds` explicito e informado).
+   */
+  findAllWithoutCategory(userId: string): Promise<Transaction[]>;
+
+  /**
+   * Lista todas as transacoes do usuario, categorizadas ou nao (usado pela
+   * recategorizacao em massa - 009 - com `includeAlreadyCategorized=true`).
+   */
+  findAllByUser(userId: string): Promise<Transaction[]>;
 }

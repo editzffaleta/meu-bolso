@@ -63,6 +63,16 @@ export const errorMessagesPt = {
   'import.format.unsupported': 'Formato de arquivo não suportado. Envie um arquivo .csv ou .ofx.',
   'import.file.empty': 'Não encontramos nenhuma linha válida nesse arquivo.',
   'import.file.too.large': 'O arquivo excede o tamanho máximo permitido (2 MB).',
+  'categorization-rule.keyword.required': 'A palavra-chave é obrigatória.',
+  'categorization-rule.keyword.invalid': 'Informe uma palavra-chave válida.',
+  'categorization-rule.categoryId.required': 'A categoria é obrigatória.',
+  'categorization-rule.categoryId.uuid': 'Selecione uma categoria válida.',
+  'categorization-rule.priority.required': 'A prioridade é obrigatória.',
+  'categorization-rule.priority.integer': 'A prioridade deve ser um número inteiro.',
+  'categorization-rule.userId.required': 'Usuário inválido.',
+  'categorization-rule.userId.uuid': 'Usuário inválido.',
+  'categorization-rule.not.found': 'Regra de categorização não encontrada.',
+  'categorization-rule.category.not.found': 'Categoria não encontrada.',
 } as const;
 
 export type ErrorMessageKey = keyof typeof errorMessagesPt;

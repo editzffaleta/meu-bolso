@@ -1,0 +1,13 @@
+model CategorizationRule {
+  id         String   @id @default(uuid())
+  keyword    String
+  priority   Int      @default(0)
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@index([userId, priority])
+  @@map("categorization_rules")
+}

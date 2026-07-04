@@ -18,6 +18,7 @@ import {
 import { CurrentUser } from '../../shared/decorators';
 import { PrismaAccountRepository } from '../accounts/account.prisma';
 import { PrismaTransactionRepository } from '../transactions/transaction.prisma';
+import { PrismaCategorizationRuleRepository } from '../categories/categorization-rule.prisma';
 import { PrismaImportRepository } from './import.prisma';
 import { CsvStatementParserImpl } from './csv-statement.parser';
 import { OfxStatementParserImpl } from './ofx-statement.parser';
@@ -41,6 +42,7 @@ export class ImportsController {
     private readonly accountRepository: PrismaAccountRepository,
     private readonly csvStatementParser: CsvStatementParserImpl,
     private readonly ofxStatementParser: OfxStatementParserImpl,
+    private readonly categorizationRuleRepository: PrismaCategorizationRuleRepository,
   ) {}
 
   @Post()
@@ -63,6 +65,7 @@ export class ImportsController {
       this.accountRepository,
       this.csvStatementParser,
       this.ofxStatementParser,
+      this.categorizationRuleRepository,
     );
 
     return useCase.execute({

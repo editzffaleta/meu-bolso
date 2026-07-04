@@ -1,12 +1,17 @@
 import { NotFoundError, UseCase, ValidationError } from "@meubolso/shared";
 import { AccountRepository } from "@meubolso/accounts";
 import { TransactionRepository, Transaction } from "@meubolso/transactions";
+import {
+  ApplyRules,
+  CategorizationRuleRepository,
+} from "@meubolso/categories";
 import { Import, ImportFormat, generateStatementFingerprint } from "../model";
 import {
   CsvStatementParser,
   ImportRepository,
   OfxStatementParser,
 } from "../provider";
+import { TransactionRepositoryCategorizationAdapter } from "../provider/transaction-repository-categorization.adapter";
 
 export interface ImportStatementIn {
   userId: string;
@@ -32,6 +37,7 @@ export class ImportStatement
     private readonly accountRepository: AccountRepository,
     private readonly csvStatementParser: CsvStatementParser,
     private readonly ofxStatementParser: OfxStatementParser,
+    private readonly categorizationRuleRepository: CategorizationRuleRepository,
   ) {}
 
   async execute(input: ImportStatementIn): Promise<ImportStatementOut> {
@@ -96,6 +102,8 @@ export class ImportStatement
     importEntity.validate();
     importEntity = await this.importRepository.create(importEntity);
 
+    const createdTransactionIds: string[] = [];
+
     for (const row of rowsToImport) {
       const type = row.amount < 0 ? "expense" : "income";
       const amount = Math.abs(row.amount);
@@ -115,7 +123,8 @@ export class ImportStatement
 
       transaction.validate();
 
-      await this.transactionRepository.create(transaction);
+      const created = await this.transactionRepository.create(transaction);
+      createdTransactionIds.push(created.id);
     }
 
     const finishedImport = importEntity.clone({
@@ -125,6 +134,18 @@ export class ImportStatement
     });
 
     await this.importRepository.update(finishedImport);
+
+    if (createdTransactionIds.length > 0) {
+      const applyRules = new ApplyRules(
+        this.categorizationRuleRepository,
+        new TransactionRepositoryCategorizationAdapter(this.transactionRepository),
+      );
+
+      await applyRules.execute({
+        userId: input.userId,
+        transactionIds: createdTransactionIds,
+      });
+    }
 
     return {
       importId: finishedImport.id,

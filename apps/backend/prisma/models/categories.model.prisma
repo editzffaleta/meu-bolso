@@ -11,7 +11,8 @@ model Category {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  transactions Transaction[]
+  transactions        Transaction[]
+  categorizationRules CategorizationRule[]
 
   @@index([userId])
   @@map("categories")

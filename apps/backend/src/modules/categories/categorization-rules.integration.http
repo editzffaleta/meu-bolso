@@ -1,0 +1,161 @@
+@baseUrl = http://localhost:4000
+@scenarioVersion = {{$timestamp}}
+
+### Cadastro do usuario 1 (dono das regras) -> 201 sem corpo
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Maria da Silva",
+  "email": "maria.rules.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Login do usuario 1 -> 200 com token
+# @name loginUser1
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "maria.rules.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Cadastro do usuario 2 (usado para validar isolamento) -> 201 sem corpo
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Joao Pereira",
+  "email": "joao.rules.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Login do usuario 2 -> 200 com token
+# @name loginUser2
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "joao.rules.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Criacao de categoria "Transporte" (usuario 1) -> 201
+# @name createTransportCategory
+POST {{baseUrl}}/categories
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "name": "Transporte",
+  "type": "expense",
+  "color": "#3B82F6"
+}
+
+### Criacao de categoria "Mercado" (usuario 1) -> 201
+# @name createMarketCategory
+POST {{baseUrl}}/categories
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "name": "Mercado",
+  "type": "expense",
+  "color": "#059669"
+}
+
+### Criacao de regra "uber" -> Transporte (usuario 1) -> 201 com { id }
+# @name createUberRule
+POST {{baseUrl}}/categorization-rules
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "keyword": "uber",
+  "categoryId": "{{createTransportCategory.response.body.id}}"
+}
+
+### Criacao de regra com categoryId inexistente -> 404 categorization-rule.category.not.found
+POST {{baseUrl}}/categorization-rules
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "keyword": "99app",
+  "categoryId": "00000000-0000-4000-8000-000000000000"
+}
+
+### Criacao de regra com keyword vazia -> 422 categorization-rule.keyword.invalid
+POST {{baseUrl}}/categorization-rules
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "keyword": "   ",
+  "categoryId": "{{createTransportCategory.response.body.id}}"
+}
+
+### Criacao de regra com categoryId de outro usuario -> 404 categorization-rule.category.not.found
+POST {{baseUrl}}/categorization-rules
+Content-Type: application/json
+Authorization: Bearer {{loginUser2.response.body.token}}
+
+{
+  "keyword": "uber",
+  "categoryId": "{{createTransportCategory.response.body.id}}"
+}
+
+### Listagem de regras do usuario 1 -> 200 com a regra "uber"
+GET {{baseUrl}}/categorization-rules
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Listagem de regras do usuario 2 -> 200 lista vazia (isolamento)
+GET {{baseUrl}}/categorization-rules
+Authorization: Bearer {{loginUser2.response.body.token}}
+
+### Atualizacao da regra do usuario 1 (aumenta priority) -> 200
+PATCH {{baseUrl}}/categorization-rules/{{createUberRule.response.body.id}}
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "priority": 10
+}
+
+### Atualizacao da regra do usuario 1 usando token do usuario 2 -> 404 categorization-rule.not.found (isolamento)
+PATCH {{baseUrl}}/categorization-rules/{{createUberRule.response.body.id}}
+Content-Type: application/json
+Authorization: Bearer {{loginUser2.response.body.token}}
+
+{
+  "priority": 99
+}
+
+### Exclusao de regra inexistente -> 404 categorization-rule.not.found
+DELETE {{baseUrl}}/categorization-rules/00000000-0000-4000-8000-000000000000
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+### Exclusao da regra do usuario 1 usando token do usuario 2 -> 404 categorization-rule.not.found (isolamento)
+DELETE {{baseUrl}}/categorization-rules/{{createUberRule.response.body.id}}
+Authorization: Bearer {{loginUser2.response.body.token}}
+
+### Recategorizacao em massa sem transacoes -> 200 com { evaluated: 0, categorized: 0 }
+POST {{baseUrl}}/categorization-rules/recategorize
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{}
+
+### Recategorizacao em massa com includeAlreadyCategorized=true -> 200
+POST {{baseUrl}}/categorization-rules/recategorize
+Content-Type: application/json
+Authorization: Bearer {{loginUser1.response.body.token}}
+
+{
+  "includeAlreadyCategorized": true
+}
+
+### Exclusao da regra do usuario 1 -> 204 sem corpo
+DELETE {{baseUrl}}/categorization-rules/{{createUberRule.response.body.id}}
+Authorization: Bearer {{loginUser1.response.body.token}}
