@@ -51,6 +51,43 @@ export class FakeTransactionCategorizationPort
   }
 
   /**
+   * Auxiliar de teste (nao faz parte do contrato): faz `updateMany` lancar
+   * apos aplicar `failAfter` atualizacoes, sem persistir nenhuma delas,
+   * simulando uma falha no meio de uma transacao de banco real.
+   */
+  failAfter?: number;
+
+  /**
+   * Simula a atomicidade (tudo ou nada) exigida pelo contrato: aplica as
+   * atualizacoes num snapshot separado e so grava no storage real se
+   * `failAfter` nao interromper o lote no meio.
+   */
+  async updateMany(
+    entities: CategorizableTransaction[],
+  ): Promise<CategorizableTransaction[]> {
+    if (entities.length === 0) {
+      return [];
+    }
+
+    const snapshot = new Map(this.storage);
+
+    for (let i = 0; i < entities.length; i += 1) {
+      if (this.failAfter !== undefined && i >= this.failAfter) {
+        throw new Error("falha simulada no meio do lote");
+      }
+
+      snapshot.set(entities[i].id, entities[i]);
+    }
+
+    this.storage.clear();
+    for (const [id, transaction] of snapshot) {
+      this.storage.set(id, transaction);
+    }
+
+    return entities;
+  }
+
+  /**
    * Auxiliar de teste (nao faz parte do contrato `TransactionCategorizationPort`):
    * busca uma unica transacao pelo id, escopada ao usuario.
    */

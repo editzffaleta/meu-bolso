@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { roundMoney } from '@meubolso/shared';
 import {
   CategorySpendingSummary,
   MonthlyTransactionSummary,
@@ -49,6 +50,23 @@ export class PrismaTransactionRepository implements TransactionRepository {
     });
 
     return this.toDomain(updated);
+  }
+
+  async updateMany(entities: Transaction[]): Promise<Transaction[]> {
+    if (entities.length === 0) {
+      return [];
+    }
+
+    const updated = await this.prisma.$transaction(
+      entities.map((entity) =>
+        this.prisma.transaction.update({
+          where: { id: entity.id, userId: entity.userId },
+          data: this.toPersistence(entity),
+        }),
+      ),
+    );
+
+    return (updated as TransactionRaw[]).map((raw) => this.toDomain(raw));
   }
 
   async delete(id: string, userId: string): Promise<void> {
@@ -158,21 +176,27 @@ export class PrismaTransactionRepository implements TransactionRepository {
       _count: { _all: true },
     });
 
-    const summary: TransactionTypeSummary = { income: 0, expense: 0, count: 0 };
+    let income = new Prisma.Decimal(0);
+    let expense = new Prisma.Decimal(0);
+    let count = 0;
 
     for (const group of grouped) {
-      const total = Number(group._sum.amount ?? 0);
+      const total = group._sum.amount ?? new Prisma.Decimal(0);
 
       if (group.type === 'income') {
-        summary.income += total;
+        income = income.plus(total);
       } else {
-        summary.expense += total;
+        expense = expense.plus(total);
       }
 
-      summary.count += group._count._all;
+      count += group._count._all;
     }
 
-    return summary;
+    return {
+      income: roundMoney(income.toNumber()),
+      expense: roundMoney(expense.toNumber()),
+      count,
+    };
   }
 
   async sumByCategory(
@@ -188,7 +212,7 @@ export class PrismaTransactionRepository implements TransactionRepository {
 
     return grouped.map((group) => ({
       categoryId: group.categoryId,
-      total: Number(group._sum.amount ?? 0),
+      total: roundMoney(Number(group._sum.amount ?? 0)),
     }));
   }
 
@@ -197,28 +221,46 @@ export class PrismaTransactionRepository implements TransactionRepository {
     from: Date,
     to: Date,
   ): Promise<MonthlyTransactionSummary[]> {
-    const transactions = await this.prisma.transaction.findMany({
-      where: { userId, date: { gte: from, lte: to } },
-      select: { date: true, type: true, amount: true },
-    });
+    // `groupBy` do Prisma nao suporta agrupar por uma expressao derivada
+    // (mes de `date`), entao a agregacao por mes usa `$queryRaw` com
+    // `date_trunc` (feita no banco) e soma em Decimal, evitando tanto a
+    // leitura de todas as linhas para o Node quanto a soma float em loop.
+    const rows = await this.prisma.$queryRaw<
+      { month: string; type: string; total: Prisma.Decimal }[]
+    >(Prisma.sql`
+      SELECT
+        to_char(date_trunc('month', "date"), 'YYYY-MM') AS month,
+        "type" AS type,
+        SUM("amount") AS total
+      FROM "Transaction"
+      WHERE "userId" = ${userId}
+        AND "date" >= ${from}
+        AND "date" <= ${to}
+      GROUP BY 1, 2
+    `);
 
     const totals = new Map<string, MonthlyTransactionSummary>();
 
-    for (const transaction of transactions) {
-      const month = toMonthKey(transaction.date);
-      const current = totals.get(month) ?? { month, income: 0, expense: 0 };
-      const amount = Number(transaction.amount);
+    for (const row of rows) {
+      const current = totals.get(row.month) ?? {
+        month: row.month,
+        income: 0,
+        expense: 0,
+      };
+      const amount = roundMoney(Number(row.total));
 
-      if (transaction.type === 'income') {
-        current.income += amount;
+      if (row.type === 'income') {
+        current.income = amount;
       } else {
-        current.expense += amount;
+        current.expense = amount;
       }
 
-      totals.set(month, current);
+      totals.set(row.month, current);
     }
 
-    return Array.from(totals.values());
+    return Array.from(totals.values()).sort((a, b) =>
+      a.month.localeCompare(b.month),
+    );
   }
 
   private toPersistence(transaction: Transaction) {
@@ -255,11 +297,4 @@ export class PrismaTransactionRepository implements TransactionRepository {
       userId: raw.userId,
     });
   }
-}
-
-function toMonthKey(date: Date): string {
-  const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-
-  return `${year}-${month}`;
 }

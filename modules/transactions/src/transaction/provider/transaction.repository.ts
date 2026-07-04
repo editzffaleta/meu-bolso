@@ -18,6 +18,17 @@ export interface TransactionRepository {
 
   update(entity: Transaction): Promise<Transaction>;
 
+  /**
+   * Atualiza todas as entidades informadas de forma ATOMICA (tudo ou nada):
+   * a implementacao concreta deve rodar as atualizacoes dentro de uma unica
+   * transacao de banco (`prisma.$transaction`), revertendo tudo se qualquer
+   * atualizacao falhar. Introduzido na auditoria M7 para que a
+   * recategorizacao em massa (`RecategorizeAll` de `@meubolso/categories`)
+   * nunca deixe estado parcial (categorias apagadas sem a nova categoria
+   * aplicada) quando falha no meio do lote.
+   */
+  updateMany(entities: Transaction[]): Promise<Transaction[]>;
+
   delete(id: string, userId: string): Promise<void>;
 
   /**

@@ -1,4 +1,4 @@
-import { UseCase } from "@meubolso/shared";
+import { roundMoney, UseCase } from "@meubolso/shared";
 import { TransactionRepository } from "@meubolso/transactions";
 import { currentMonth, monthRange } from "../model";
 
@@ -27,10 +27,13 @@ export class GetSummary implements UseCase<GetSummaryIn, SummaryOut> {
       to,
     );
 
+    const totalIncome = roundMoney(summary.income);
+    const totalExpense = roundMoney(summary.expense);
+
     return {
-      totalIncome: summary.income,
-      totalExpense: summary.expense,
-      balance: summary.income - summary.expense,
+      totalIncome,
+      totalExpense,
+      balance: roundMoney(totalIncome - totalExpense),
       transactionCount: summary.count,
     };
   }

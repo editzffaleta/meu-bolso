@@ -39,4 +39,12 @@ export class TransactionRepositoryCategorizationAdapter
       entity as unknown as Parameters<TransactionRepository["update"]>[0],
     );
   }
+
+  async updateMany(
+    entities: CategorizableTransaction[],
+  ): Promise<CategorizableTransaction[]> {
+    return this.transactionRepository.updateMany(
+      entities as unknown as Parameters<TransactionRepository["updateMany"]>[0],
+    );
+  }
 }
