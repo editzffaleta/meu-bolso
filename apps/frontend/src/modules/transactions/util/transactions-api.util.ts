@@ -40,11 +40,13 @@ function buildQueryString(params: ListTransactionsParams): string {
 export async function listTransactions(
   token: string,
   params: ListTransactionsParams = {},
+  signal?: AbortSignal,
 ): Promise<ListTransactionsResult> {
   return apiRequest<ListTransactionsResult>(`/transactions${buildQueryString(params)}`, {
     method: 'GET',
     token,
     expectedStatus: 200,
+    signal,
   });
 }
 

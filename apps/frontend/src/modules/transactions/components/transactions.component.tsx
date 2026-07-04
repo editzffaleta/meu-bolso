@@ -74,24 +74,32 @@ export default function TransactionsComponent() {
     }
   }, [token]);
 
-  const loadTransactions = useCallback(async () => {
-    if (!token) return;
+  const loadTransactions = useCallback(
+    async (signal?: AbortSignal) => {
+      if (!token) return;
 
-    setIsLoading(true);
-    try {
-      const result = await listTransactions(token, {
-        ...filters,
-        page,
-        pageSize: DEFAULT_PAGE_SIZE,
-      });
-      setTransactions(result.items);
-      setTotal(result.total);
-    } catch (error) {
-      reportApiErrors(error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [token, filters, page]);
+      setIsLoading(true);
+      try {
+        const result = await listTransactions(
+          token,
+          {
+            ...filters,
+            page,
+            pageSize: DEFAULT_PAGE_SIZE,
+          },
+          signal,
+        );
+        setTransactions(result.items);
+        setTotal(result.total);
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') return;
+        reportApiErrors(error);
+      } finally {
+        if (!signal?.aborted) setIsLoading(false);
+      }
+    },
+    [token, filters, page],
+  );
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- carregamento inicial de dados via API externa
@@ -99,8 +107,10 @@ export default function TransactionsComponent() {
   }, [loadReferenceData]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- carregamento inicial de dados via API externa
-    loadTransactions();
+    const controller = new AbortController();
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- carregamento de dados via API externa a cada troca de filtros/página
+    loadTransactions(controller.signal);
+    return () => controller.abort();
   }, [loadTransactions]);
 
   function handleFiltersChange(nextFilters: TransactionFilters) {
@@ -162,7 +172,12 @@ export default function TransactionsComponent() {
       await deleteTransaction(token, transactionPendingDeletion.id);
       toast.success('Transação excluída com sucesso!');
       setTransactionPendingDeletion(null);
-      await loadTransactions();
+
+      if (transactions.length === 1 && page > 1) {
+        setPage((current) => current - 1);
+      } else {
+        await loadTransactions();
+      }
     } catch (error) {
       reportApiErrors(error);
     } finally {
