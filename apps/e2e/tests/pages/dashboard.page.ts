@@ -15,4 +15,8 @@ export class DashboardPage {
   chartCategory() {
     return this.page.getByTestId('dashboard-chart-category');
   }
+
+  chartCategoryLegendItems() {
+    return this.page.getByTestId('dashboard-chart-category').locator('span[aria-hidden="true"]');
+  }
 }
