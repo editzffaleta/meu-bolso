@@ -125,8 +125,8 @@ function BrandPanel() {
               backdropFilter: 'blur(4px)',
             }}
           >
-            <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 22, fontWeight: 700 }}>R$ 17.769</div>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,.75)', marginTop: 2 }}>Saldo consolidado</div>
+            <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 22, fontWeight: 700 }}>CSV · OFX</div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,.75)', marginTop: 2 }}>Importe seus extratos</div>
           </div>
           <div
             style={{
@@ -137,8 +137,8 @@ function BrandPanel() {
               backdropFilter: 'blur(4px)',
             }}
           >
-            <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 22, fontWeight: 700 }}>+53%</div>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,.75)', marginTop: 2 }}>Economia no mês</div>
+            <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 22, fontWeight: 700 }}>Automático</div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,.75)', marginTop: 2 }}>Categorização por regras</div>
           </div>
         </div>
       </div>

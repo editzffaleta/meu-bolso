@@ -30,6 +30,31 @@ import { DashboardRecentTransactionsCard } from '@/modules/analytics/components/
 const EVOLUTION_MONTHS = 6;
 const RECENT_TRANSACTIONS_LIMIT = 8;
 
+const MONTH_NAMES = [
+  'Janeiro',
+  'Fevereiro',
+  'Março',
+  'Abril',
+  'Maio',
+  'Junho',
+  'Julho',
+  'Agosto',
+  'Setembro',
+  'Outubro',
+  'Novembro',
+  'Dezembro',
+];
+
+function formatMonthLabel(value: string): string {
+  const [year, month] = value.split('-');
+  const index = Number(month) - 1;
+  const name = MONTH_NAMES[index];
+  if (!name || !year) {
+    return value;
+  }
+  return `${name} ${year}`;
+}
+
 function reportApiErrors(error: unknown) {
   if (error instanceof AnalyticsApiError) {
     error.errors.forEach((code) => toast.error(getMessage(code)));
@@ -99,6 +124,7 @@ export default function DashboardComponent() {
         <label
           htmlFor="dashboard-month"
           style={{
+            position: 'relative',
             display: 'flex',
             alignItems: 'center',
             gap: 8,
@@ -112,12 +138,21 @@ export default function DashboardComponent() {
           }}
         >
           <Icon name="calendar_month" size={18} color="var(--text-dim)" />
+          <span>{formatMonthLabel(month)}</span>
+          <Icon name="expand_more" size={18} color="var(--text-faint)" />
           <input
             id="dashboard-month"
             type="month"
             value={month}
             onChange={(event) => setMonth(event.target.value || currentMonth())}
-            style={{ background: 'transparent', border: 'none', outline: 'none', color: 'var(--text)' }}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              opacity: 0,
+              cursor: 'pointer',
+            }}
           />
         </label>
       </div>

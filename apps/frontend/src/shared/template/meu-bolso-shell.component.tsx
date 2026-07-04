@@ -177,23 +177,6 @@ export function MeuBolsoShell({ children, userName, userEmail, saldoConsolidado,
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                background: 'var(--surface-2)',
-                border: '1px solid var(--border)',
-                borderRadius: 10,
-                padding: '8px 12px',
-                cursor: 'pointer',
-              }}
-            >
-              <Icon name="calendar_month" size={18} color="var(--text-dim)" />
-              <span style={{ fontSize: 13, fontWeight: 600 }}>Julho 2026</span>
-              <Icon name="expand_more" size={18} color="var(--text-faint)" />
-            </div>
-
             <button
               type="button"
               onClick={toggleTheme}
