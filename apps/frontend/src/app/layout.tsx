@@ -32,7 +32,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        { }
         <script dangerouslySetInnerHTML={{ __html: THEME_ANTI_FLASH_SCRIPT }} />
       </head>
       <body className="min-h-full flex flex-col">

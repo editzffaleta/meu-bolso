@@ -1,0 +1,72 @@
+@baseUrl = http://localhost:4000
+@scenarioVersion = {{$timestamp}}
+
+### Cadastro com dados validos -> 201 sem corpo
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Maria da Silva",
+  "email": "maria.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Cadastro com e-mail ja existente -> 409 (mesma versao do cenario anterior)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Maria da Silva",
+  "email": "maria.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Cadastro com senha fraca -> 422
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Maria da Silva",
+  "email": "maria.fraca.{{scenarioVersion}}@example.com",
+  "password": "123456"
+}
+
+### Cadastro com senha comum na blacklist -> 422
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Maria da Silva",
+  "email": "maria.comum.{{scenarioVersion}}@example.com",
+  "password": "123456"
+}
+
+### Cadastro com nome invalido -> 422
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "M4",
+  "email": "maria.nome.{{scenarioVersion}}@example.com",
+  "password": "Strong@123"
+}
+
+### Cadastro com email invalido -> 422
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Maria da Silva",
+  "email": "nao-e-um-email",
+  "password": "Strong@123"
+}
+
+### Cadastro com multiplos campos invalidos -> 422 com varios itens em errors[]
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "",
+  "email": "nao-e-um-email",
+  "password": "123456"
+}
