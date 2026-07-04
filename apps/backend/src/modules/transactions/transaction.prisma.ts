@@ -232,7 +232,7 @@ export class PrismaTransactionRepository implements TransactionRepository {
         to_char(date_trunc('month', "date"), 'YYYY-MM') AS month,
         "type" AS type,
         SUM("amount") AS total
-      FROM "Transaction"
+      FROM "transactions"
       WHERE "userId" = ${userId}
         AND "date" >= ${from}
         AND "date" <= ${to}
