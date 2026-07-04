@@ -263,6 +263,37 @@ export class PrismaTransactionRepository implements TransactionRepository {
     );
   }
 
+  async sumAllTime(userId: string): Promise<TransactionTypeSummary> {
+    const grouped = await this.prisma.transaction.groupBy({
+      by: ['type'],
+      where: { userId },
+      _sum: { amount: true },
+      _count: { _all: true },
+    });
+
+    let income = new Prisma.Decimal(0);
+    let expense = new Prisma.Decimal(0);
+    let count = 0;
+
+    for (const group of grouped) {
+      const total = group._sum.amount ?? new Prisma.Decimal(0);
+
+      if (group.type === 'income') {
+        income = income.plus(total);
+      } else {
+        expense = expense.plus(total);
+      }
+
+      count += group._count._all;
+    }
+
+    return {
+      income: roundMoney(income.toNumber()),
+      expense: roundMoney(expense.toNumber()),
+      count,
+    };
+  }
+
   private toPersistence(transaction: Transaction) {
     return {
       id: transaction.id,

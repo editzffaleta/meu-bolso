@@ -17,6 +17,7 @@
     "test:watch": "jest --watchAll"
   },
   "dependencies": {
+    "@meubolso/accounts": "*",
     "@meubolso/categories": "*",
     "@meubolso/transactions": "*",
     "@meubolso/shared": "^1.0.0"

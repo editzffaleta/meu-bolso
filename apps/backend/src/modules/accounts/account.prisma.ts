@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import { roundMoney } from '@meubolso/shared';
 import { Account, AccountRepository, AccountType } from '@meubolso/accounts';
 import { PrismaService } from '../../db/prisma.service';
 
@@ -56,6 +58,17 @@ export class PrismaAccountRepository implements AccountRepository {
     });
 
     return found.map((item) => this.toDomain(item));
+  }
+
+  async sumInitialBalance(userId: string): Promise<number> {
+    const result = await this.prisma.account.aggregate({
+      where: { userId },
+      _sum: { initialBalance: true },
+    });
+
+    const total = result._sum.initialBalance ?? new Prisma.Decimal(0);
+
+    return roundMoney(total.toNumber());
   }
 
   private toPersistence(account: Account) {
