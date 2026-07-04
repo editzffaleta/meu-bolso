@@ -5,16 +5,17 @@ import { toast } from 'sonner';
 import { Icon } from '@/shared/components/ui/icon';
 import { getMessage } from '@/shared/i18n';
 import { useAuth } from '@/modules/auth/context/auth.context';
-import { listAccounts, AccountsApiError } from '@/modules/accounts/util/accounts-api.util';
+import { listAccounts } from '@/modules/accounts/util/accounts-api.util';
 import type { Account } from '@/modules/accounts/types/account.type';
 import { ImportDropzone } from '@/modules/imports/components/import-dropzone.component';
 import { ImportHistoryList } from '@/modules/imports/components/import-history-list.component';
 import { ImportResultCard } from '@/modules/imports/components/import-result-card.component';
 import type { ImportRecord, ImportStatementResult } from '@/modules/imports/types/import.type';
-import { ImportsApiError, importStatement, listImports } from '@/modules/imports/util/imports-api.util';
+import { importStatement, listImports } from '@/modules/imports/util/imports-api.util';
+import { ApiError } from '@/shared/util/http-client.util';
 
 function reportApiErrors(error: unknown) {
-  if (error instanceof ImportsApiError || error instanceof AccountsApiError) {
+  if (error instanceof ApiError) {
     error.errors.forEach((code) => toast.error(getMessage(code)));
     return;
   }

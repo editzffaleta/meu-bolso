@@ -14,19 +14,19 @@ import type {
   CategorizationRuleFormValues,
 } from '@/modules/categories/types/categorization-rule.type';
 import {
-  CategorizationRulesApiError,
   createCategorizationRule,
   deleteCategorizationRule,
   listCategorizationRules,
   recategorizeTransactions,
 } from '@/modules/categories/util/categorization-rules-api.util';
+import { ApiError } from '@/shared/util/http-client.util';
 
 type CategorizationRulesProps = {
   categories: Category[];
 };
 
 function reportApiErrors(error: unknown) {
-  if (error instanceof CategorizationRulesApiError) {
+  if (error instanceof ApiError) {
     error.errors.forEach((code) => toast.error(getMessage(code)));
     return;
   }

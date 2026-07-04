@@ -1,12 +1,10 @@
-import type { ApiErrorResponse } from '@/shared/types/api-error.type';
+import { apiRequest } from '@/shared/util/http-client.util';
 import type {
   ListTransactionsResult,
   Transaction,
   TransactionFilters,
   TransactionType,
 } from '@/modules/transactions/types/transaction.type';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
 export type CreateTransactionPayload = {
   date: string;
@@ -23,34 +21,6 @@ export type ListTransactionsParams = Partial<TransactionFilters> & {
   page?: number;
   pageSize?: number;
 };
-
-export class TransactionsApiError extends Error {
-  errors: string[];
-
-  constructor(errors: string[]) {
-    super(errors.join(', '));
-    this.errors = errors;
-  }
-}
-
-async function parseErrorResponse(response: Response): Promise<never> {
-  let body: ApiErrorResponse | null = null;
-  try {
-    body = (await response.json()) as ApiErrorResponse;
-  } catch {
-    body = null;
-  }
-
-  const errorCodes = body?.errors?.length ? body.errors : ['INTERNAL_SERVER_ERROR'];
-  throw new TransactionsApiError(errorCodes);
-}
-
-function authHeaders(token: string): HeadersInit {
-  return {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`,
-  };
-}
 
 function buildQueryString(params: ListTransactionsParams): string {
   const searchParams = new URLSearchParams();
@@ -71,33 +41,23 @@ export async function listTransactions(
   token: string,
   params: ListTransactionsParams = {},
 ): Promise<ListTransactionsResult> {
-  const response = await fetch(`${API_URL}/transactions${buildQueryString(params)}`, {
+  return apiRequest<ListTransactionsResult>(`/transactions${buildQueryString(params)}`, {
     method: 'GET',
-    headers: authHeaders(token),
+    token,
+    expectedStatus: 200,
   });
-
-  if (response.status !== 200) {
-    await parseErrorResponse(response);
-  }
-
-  return (await response.json()) as ListTransactionsResult;
 }
 
 export async function createTransaction(
   token: string,
   payload: CreateTransactionPayload,
 ): Promise<Transaction> {
-  const response = await fetch(`${API_URL}/transactions`, {
+  return apiRequest<Transaction>('/transactions', {
     method: 'POST',
-    headers: authHeaders(token),
-    body: JSON.stringify(payload),
+    token,
+    body: payload,
+    expectedStatus: 201,
   });
-
-  if (response.status !== 201) {
-    await parseErrorResponse(response);
-  }
-
-  return (await response.json()) as Transaction;
 }
 
 export async function updateTransaction(
@@ -105,26 +65,14 @@ export async function updateTransaction(
   id: string,
   payload: UpdateTransactionPayload,
 ): Promise<Transaction> {
-  const response = await fetch(`${API_URL}/transactions/${id}`, {
+  return apiRequest<Transaction>(`/transactions/${id}`, {
     method: 'PATCH',
-    headers: authHeaders(token),
-    body: JSON.stringify(payload),
+    token,
+    body: payload,
+    expectedStatus: 200,
   });
-
-  if (response.status !== 200) {
-    await parseErrorResponse(response);
-  }
-
-  return (await response.json()) as Transaction;
 }
 
 export async function deleteTransaction(token: string, id: string): Promise<void> {
-  const response = await fetch(`${API_URL}/transactions/${id}`, {
-    method: 'DELETE',
-    headers: authHeaders(token),
-  });
-
-  if (response.status !== 204) {
-    await parseErrorResponse(response);
-  }
+  await apiRequest<void>(`/transactions/${id}`, { method: 'DELETE', token, expectedStatus: 204 });
 }

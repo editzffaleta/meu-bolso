@@ -11,11 +11,11 @@ import type { Category } from '@/modules/categories/types/category.type';
 import { listTransactions } from '@/modules/transactions/util/transactions-api.util';
 import type { Transaction } from '@/modules/transactions/types/transaction.type';
 import {
-  AnalyticsApiError,
   getMonthlyEvolution,
   getSpendingByCategory,
   getSummary,
 } from '@/modules/analytics/util/analytics-api.util';
+import { ApiError } from '@/shared/util/http-client.util';
 import type {
   MonthlyEvolutionOut,
   SpendingByCategoryOut,
@@ -56,7 +56,7 @@ function formatMonthLabel(value: string): string {
 }
 
 function reportApiErrors(error: unknown) {
-  if (error instanceof AnalyticsApiError) {
+  if (error instanceof ApiError) {
     error.errors.forEach((code) => toast.error(getMessage(code)));
     return;
   }

@@ -10,15 +10,15 @@ import { AccountCard } from '@/modules/accounts/components/account-card.componen
 import { AccountFormDialog } from '@/modules/accounts/components/account-form-dialog.component';
 import type { Account, AccountFormValues } from '@/modules/accounts/types/account.type';
 import {
-  AccountsApiError,
   createAccount,
   deleteAccount,
   listAccounts,
   updateAccount,
 } from '@/modules/accounts/util/accounts-api.util';
+import { ApiError } from '@/shared/util/http-client.util';
 
 function reportApiErrors(error: unknown) {
-  if (error instanceof AccountsApiError) {
+  if (error instanceof ApiError) {
     error.errors.forEach((code) => toast.error(getMessage(code)));
     return;
   }

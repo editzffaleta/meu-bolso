@@ -14,16 +14,16 @@ import { BudgetProgressCard } from '@/modules/budgets/components/budget-progress
 import type { Budget, BudgetFormValues, BudgetProgress } from '@/modules/budgets/types/budget.type';
 import { currentMonth } from '@/modules/budgets/types/budget.type';
 import {
-  BudgetsApiError,
   createBudget,
   deleteBudget,
   getBudgetsProgress,
   listBudgets,
   updateBudget,
 } from '@/modules/budgets/util/budgets-api.util';
+import { ApiError } from '@/shared/util/http-client.util';
 
 function reportApiErrors(error: unknown) {
-  if (error instanceof BudgetsApiError) {
+  if (error instanceof ApiError) {
     error.errors.forEach((code) => toast.error(getMessage(code)));
     return;
   }
