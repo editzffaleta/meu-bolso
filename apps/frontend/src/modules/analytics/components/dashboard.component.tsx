@@ -5,9 +5,6 @@ import Link from 'next/link';
 import { CalendarDays, Plus, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
-import { Label } from '@/shared/components/ui/label';
-import { PageSectionHeader } from '@/shared/components/ui/page-section-header';
 import { getMessage } from '@/shared/i18n';
 import { useAuth } from '@/modules/auth/context/auth.context';
 import { listCategories } from '@/modules/categories/util/categories-api.util';
@@ -97,27 +94,29 @@ export default function DashboardComponent() {
   const showGeneralEmptyState = !isLoading && hasAnyTransactionEver === false;
 
   return (
-    <div className="flex flex-col gap-6">
-      <PageSectionHeader
-        badge="Dashboard"
-        title="Visão geral"
-        subtitle="Acompanhe saldo, receitas, despesas e para onde seu dinheiro está indo"
-        aside={
-          <div className="flex flex-col gap-1">
-            <Label htmlFor="dashboard-month" className="flex items-center gap-1.5 text-xs text-zinc-400">
-              <CalendarDays className="size-3.5" />
-              Mês de referência
-            </Label>
-            <Input
-              id="dashboard-month"
-              type="month"
-              value={month}
-              onChange={(event) => setMonth(event.target.value || currentMonth())}
-              className="w-44"
-            />
-          </div>
-        }
-      />
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-[19px] font-bold tracking-tight text-foreground">Dashboard</h2>
+          <p className="mt-0.5 text-[12.5px] text-muted-foreground">
+            Acompanhe saldo, receitas, despesas e para onde seu dinheiro está indo
+          </p>
+        </div>
+
+        <label
+          htmlFor="dashboard-month"
+          className="flex items-center gap-2 rounded-[10px] border border-border bg-muted px-3 py-2 text-sm font-semibold text-foreground"
+        >
+          <CalendarDays className="size-[18px] text-muted-foreground" />
+          <input
+            id="dashboard-month"
+            type="month"
+            value={month}
+            onChange={(event) => setMonth(event.target.value || currentMonth())}
+            className="bg-transparent outline-none"
+          />
+        </label>
+      </div>
 
       {showGeneralEmptyState ? (
         <GeneralEmptyState />
@@ -147,13 +146,13 @@ export default function DashboardComponent() {
 
 function GeneralEmptyState() {
   return (
-    <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-white/10 bg-white/[0.03] py-20 text-center">
-      <span className="grid size-16 place-items-center rounded-2xl bg-primary/10">
+    <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-border bg-card py-20 text-center shadow-[var(--shadow-card)]">
+      <span className="grid size-16 place-items-center rounded-2xl bg-primary-soft">
         <Sparkles className="size-8 text-primary" />
       </span>
       <div className="space-y-1">
-        <h3 className="text-lg font-bold text-zinc-100">Comece registrando sua primeira transação</h3>
-        <p className="mx-auto max-w-sm text-sm text-zinc-500">
+        <h3 className="text-lg font-bold text-foreground">Comece registrando sua primeira transação</h3>
+        <p className="mx-auto max-w-sm text-sm text-muted-foreground">
           Assim que você lançar receitas e despesas, seus gráficos e indicadores aparecem aqui automaticamente.
         </p>
       </div>

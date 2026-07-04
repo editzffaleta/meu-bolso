@@ -1,5 +1,6 @@
+import type { ReactNode } from 'react';
 import { ArrowDownCircle, ArrowUpCircle, ListChecks, Wallet } from 'lucide-react';
-import { MetricCard } from '@/shared/components/ui/metric-card';
+import { cn } from '@/shared/lib/class-name.util';
 import { formatCurrencyBRL } from '@/modules/transactions/util/format-currency.util';
 import type { SummaryOut } from '@/modules/analytics/types/analytics.type';
 
@@ -8,6 +9,40 @@ type DashboardKpiCardsProps = {
   isLoading: boolean;
 };
 
+type KpiCardProps = {
+  label: string;
+  value: ReactNode;
+  icon: ReactNode;
+  iconBgClassName: string;
+  iconColorClassName: string;
+  valueColorClassName?: string;
+  'data-testid'?: string;
+};
+
+function KpiCard({ label, value, icon, iconBgClassName, iconColorClassName, valueColorClassName, 'data-testid': dataTestId }: KpiCardProps) {
+  return (
+    <div
+      data-testid={dataTestId}
+      className="rounded-2xl border border-border bg-card px-5 py-[18px] shadow-[var(--shadow-card)]"
+    >
+      <div className="flex items-center justify-between">
+        <span className="text-[13px] font-medium text-muted-foreground">{label}</span>
+        <span className={cn('grid size-[34px] shrink-0 place-items-center rounded-[10px]', iconBgClassName)}>
+          <span className={cn('[&_svg]:size-[19px]', iconColorClassName)}>{icon}</span>
+        </span>
+      </div>
+      <div
+        className={cn(
+          'font-mono-money mt-3 text-2xl font-bold tracking-tight text-foreground',
+          valueColorClassName,
+        )}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
+
 export function DashboardKpiCards({ summary, isLoading }: DashboardKpiCardsProps) {
   if (isLoading || !summary) {
     return (
@@ -15,7 +50,7 @@ export function DashboardKpiCards({ summary, isLoading }: DashboardKpiCardsProps
         {Array.from({ length: 4 }).map((_, index) => (
           <div
             key={`kpi-skeleton-${index}`}
-            className="h-32 animate-pulse rounded-2xl border border-white/10 bg-white/[0.03]"
+            className="h-32 animate-pulse rounded-2xl border border-border bg-card"
           />
         ))}
       </div>
@@ -26,43 +61,40 @@ export function DashboardKpiCards({ summary, isLoading }: DashboardKpiCardsProps
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <MetricCard
-        title="Saldo"
-        subtitle="Receitas - despesas no mês"
+      <KpiCard
+        label="Saldo"
         value={formatCurrencyBRL(summary.balance)}
         icon={<Wallet />}
-        valueClassName={`font-mono-money text-2xl md:text-3xl font-black tracking-tight ${
-          isBalancePositive ? 'text-emerald-400' : 'text-rose-400'
-        }`}
-        iconColorClassName={isBalancePositive ? 'text-emerald-400' : 'text-rose-400'}
+        iconBgClassName={isBalancePositive ? 'bg-primary-soft' : 'bg-destructive/10'}
+        iconColorClassName={isBalancePositive ? 'text-primary' : 'text-destructive'}
+        valueColorClassName={isBalancePositive ? 'text-primary' : 'text-destructive'}
         data-testid="dashboard-kpi-balance"
       />
 
-      <MetricCard
-        title="Receitas"
-        subtitle="Total de entradas no mês"
+      <KpiCard
+        label="Receitas"
         value={formatCurrencyBRL(summary.totalIncome)}
         icon={<ArrowUpCircle />}
-        valueClassName="font-mono-money text-2xl md:text-3xl font-black tracking-tight text-emerald-400"
-        iconColorClassName="text-emerald-400"
+        iconBgClassName="bg-primary-soft"
+        iconColorClassName="text-primary"
+        valueColorClassName="text-primary"
       />
 
-      <MetricCard
-        title="Despesas"
-        subtitle="Total de saídas no mês"
+      <KpiCard
+        label="Despesas"
         value={formatCurrencyBRL(summary.totalExpense)}
         icon={<ArrowDownCircle />}
-        valueClassName="font-mono-money text-2xl md:text-3xl font-black tracking-tight text-rose-400"
-        iconColorClassName="text-rose-400"
+        iconBgClassName="bg-destructive/10"
+        iconColorClassName="text-destructive"
+        valueColorClassName="text-destructive"
       />
 
-      <MetricCard
-        title="Transações"
-        subtitle="Quantidade lançada no mês"
+      <KpiCard
+        label="Transações"
         value={summary.transactionCount}
         icon={<ListChecks />}
-        valueClassName="font-mono-money text-2xl md:text-3xl font-black tracking-tight text-zinc-100"
-        iconColorClassName="text-sky-400"
+        iconBgClassName="bg-muted"
+        iconColorClassName="text-muted-foreground"
       />
     </div>
   );
