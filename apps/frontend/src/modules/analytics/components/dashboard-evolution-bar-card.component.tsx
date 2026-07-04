@@ -1,7 +1,7 @@
 'use client';
 
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { BarChart3 } from 'lucide-react';
+import { Icon } from '@/shared/components/ui/icon';
 import { formatCurrencyBRL } from '@/modules/transactions/util/format-currency.util';
 import type { MonthlyEvolutionOut } from '@/modules/analytics/types/analytics.type';
 
@@ -30,33 +30,65 @@ export function DashboardEvolutionBarCard({ items, isLoading }: DashboardEvoluti
   }));
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-[22px] shadow-[var(--shadow-card)]">
-      <div className="mb-[18px] flex items-center justify-between">
+    <div
+      style={{
+        background: 'var(--surface)',
+        border: '1px solid var(--card-border)',
+        borderRadius: 16,
+        padding: 22,
+        boxShadow: 'var(--shadow-card)',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
         <div>
-          <h3 className="text-[15px] font-bold text-foreground">Receitas x Despesas</h3>
-          <p className="mt-0.5 text-[12.5px] text-muted-foreground">Últimos {items.length || 6} meses</p>
+          <div style={{ fontSize: 15, fontWeight: 700 }}>Receitas x Despesas</div>
+          <div style={{ fontSize: 12.5, color: 'var(--text-dim)', marginTop: 2 }}>
+            Últimos {items.length || 6} meses
+          </div>
         </div>
-        <div className="flex gap-4">
-          <div className="flex items-center gap-1.5 text-[12.5px] text-muted-foreground">
-            <span className="size-2.5 rounded-[3px] bg-success" />
+        <div style={{ display: 'flex', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, color: 'var(--text-dim)' }}>
+            <span style={{ width: 10, height: 10, borderRadius: 3, background: '#059669' }} />
             Receita
           </div>
-          <div className="flex items-center gap-1.5 text-[12.5px] text-muted-foreground">
-            <span className="size-2.5 rounded-[3px] bg-destructive" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, color: 'var(--text-dim)' }}>
+            <span style={{ width: 10, height: 10, borderRadius: 3, background: '#dc2626' }} />
             Despesa
           </div>
         </div>
       </div>
 
       {isLoading ? (
-        <div className="h-80 animate-pulse rounded-2xl border border-border bg-muted" />
+        <div
+          style={{
+            height: 320,
+            borderRadius: 16,
+            border: '1px solid var(--border)',
+            background: 'var(--surface-2)',
+            animation: 'pulse 1.5s ease-in-out infinite',
+          }}
+        />
       ) : !hasData ? (
-        <div className="flex h-80 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border bg-muted/60 px-6 text-center">
-          <BarChart3 className="size-8 text-muted-foreground" aria-hidden />
-          <p className="text-sm text-muted-foreground">Sem dados suficientes para exibir a evolução mensal.</p>
+        <div
+          style={{
+            height: 320,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 12,
+            borderRadius: 16,
+            border: '1px dashed var(--border)',
+            background: 'var(--surface-2)',
+            padding: '0 24px',
+            textAlign: 'center',
+          }}
+        >
+          <Icon name="bar_chart" size={32} color="var(--text-faint)" />
+          <p style={{ fontSize: 14, color: 'var(--text-dim)' }}>Sem dados suficientes para exibir a evolução mensal.</p>
         </div>
       ) : (
-        <div className="h-80 w-full">
+        <div style={{ height: 320, width: '100%' }}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} margin={{ top: 8, right: 8, left: 4, bottom: 4 }}>
               <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
@@ -65,29 +97,29 @@ export function DashboardEvolutionBarCard({ items, isLoading }: DashboardEvoluti
                 axisLine={false}
                 tickLine={false}
                 tickMargin={10}
-                tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
+                tick={{ fill: 'var(--text-dim)', fontSize: 12 }}
               />
               <YAxis
                 axisLine={false}
                 tickLine={false}
                 tickMargin={10}
                 width={80}
-                tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
+                tick={{ fill: 'var(--text-dim)', fontSize: 12 }}
                 tickFormatter={(value: number) => formatCurrencyBRL(value)}
               />
               <Tooltip
                 contentStyle={{
                   border: '1px solid var(--border)',
                   borderRadius: '16px',
-                  backgroundColor: 'var(--card)',
-                  color: 'var(--card-foreground)',
-                  boxShadow: 'var(--shadow-md, 0 8px 22px -8px rgba(17,24,39,.14))',
+                  backgroundColor: 'var(--surface)',
+                  color: 'var(--text)',
+                  boxShadow: 'var(--shadow-md)',
                 }}
-                cursor={{ fill: 'var(--muted)' }}
+                cursor={{ fill: 'var(--surface-2)' }}
                 formatter={(value, name) => [formatCurrencyBRL(Number(value ?? 0)), String(name ?? '')]}
               />
-              <Bar dataKey="Receita" fill="var(--success)" radius={[8, 8, 4, 4]} maxBarSize={28} />
-              <Bar dataKey="Despesa" fill="var(--destructive)" radius={[8, 8, 4, 4]} maxBarSize={28} />
+              <Bar dataKey="Receita" fill="#059669" radius={[8, 8, 4, 4]} maxBarSize={28} />
+              <Bar dataKey="Despesa" fill="#dc2626" radius={[8, 8, 4, 4]} maxBarSize={28} />
             </BarChart>
           </ResponsiveContainer>
         </div>

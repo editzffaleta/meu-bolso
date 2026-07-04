@@ -1,8 +1,6 @@
 'use client';
 
-import { Pencil, Trash2, Upload, PenLine } from 'lucide-react';
-import { LucideIconByKey } from '@/shared/components/ui/lucide-icon-by-key';
-import { TableCell, TableRow } from '@/shared/components/ui/table';
+import { Icon } from '@/shared/components/ui/icon';
 import type { Account } from '@/modules/accounts/types/account.type';
 import type { Category } from '@/modules/categories/types/category.type';
 import type { Transaction } from '@/modules/transactions/types/transaction.type';
@@ -31,76 +29,141 @@ function hexToSoftBackground(hex: string): string {
 
 export function TransactionRow({ transaction, account, category, onEdit, onDelete }: TransactionRowProps) {
   const isIncome = transaction.type === 'income';
+  const valueColor = isIncome ? '#16a34a' : '#dc2626';
   const signedValue = `${isIncome ? '+' : '-'} ${formatCurrencyBRL(transaction.amount)}`;
   const isManual = transaction.source === 'manual';
+  const categoryColor = category?.color ?? '#94a3b8';
 
   return (
-    <TableRow data-testid="transactions-table-row">
-      <TableCell className="whitespace-nowrap font-mono-money text-sm text-muted-foreground">
+    <div
+      data-testid="transactions-table-row"
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '92px 1fr 150px 140px 130px 130px',
+        gap: 12,
+        padding: '14px 22px',
+        borderBottom: '1px solid var(--border)',
+        alignItems: 'center',
+      }}
+    >
+      <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 13, color: 'var(--text-dim)' }}>
         {formatDateBR(transaction.date)}
-      </TableCell>
+      </div>
 
-      <TableCell className="min-w-0">
-        <span className="truncate text-sm font-semibold">{transaction.description}</span>
-      </TableCell>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 11, minWidth: 0 }}>
+        <span
+          style={{
+            width: 34,
+            height: 34,
+            borderRadius: 9,
+            display: 'grid',
+            placeItems: 'center',
+            flexShrink: 0,
+            background: hexToSoftBackground(categoryColor),
+          }}
+        >
+          <Icon name={category?.icon ?? 'category'} size={18} color={categoryColor} />
+        </span>
+        <span
+          style={{
+            fontSize: 14,
+            fontWeight: 600,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {transaction.description}
+        </span>
+      </div>
 
-      <TableCell>
+      <div>
         {category ? (
           <span
-            className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11.5px] font-semibold"
-            style={{ backgroundColor: hexToSoftBackground(category.color), color: category.color }}
             data-testid="transaction-category-badge"
+            style={{
+              fontSize: 11.5,
+              fontWeight: 600,
+              padding: '4px 10px',
+              borderRadius: 20,
+              color: categoryColor,
+              background: hexToSoftBackground(categoryColor),
+            }}
           >
-            <LucideIconByKey name={category.icon} size={13} iconColor={category.color} />
             {category.name}
           </span>
         ) : (
-          <span className="text-xs text-muted-foreground" data-testid="transaction-category-badge">
+          <span
+            data-testid="transaction-category-badge"
+            style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--text-faint)' }}
+          >
             Sem categoria
           </span>
         )}
-      </TableCell>
+      </div>
 
-      <TableCell className="text-sm text-muted-foreground">{account?.name ?? '—'}</TableCell>
+      <div style={{ fontSize: 13, color: 'var(--text-dim)' }}>{account?.name ?? '—'}</div>
 
-      <TableCell>
+      <div>
         <span
-          className={`inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11.5px] font-semibold ${
-            isManual ? 'bg-sky-500/10 text-sky-500' : 'bg-violet-500/10 text-violet-500'
-          }`}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 4,
+            fontSize: 11.5,
+            fontWeight: 600,
+            padding: '3px 9px',
+            borderRadius: 6,
+            color: isManual ? '#0284c7' : '#7c3aed',
+            background: isManual ? 'rgba(2,132,199,.12)' : 'rgba(124,58,237,.12)',
+          }}
         >
-          {isManual ? <PenLine className="size-3.5" /> : <Upload className="size-3.5" />}
+          <Icon name={isManual ? 'edit_note' : 'upload_file'} size={14} />
           {isManual ? 'Manual' : 'Importada'}
         </span>
-      </TableCell>
+      </div>
 
-      <TableCell>
-        <div className="flex items-center justify-end gap-2">
-          <span
-            className={`whitespace-nowrap font-mono-money text-sm font-semibold ${
-              isIncome ? 'text-emerald-500' : 'text-rose-500'
-            }`}
-          >
-            {signedValue}
-          </span>
-          <button
-            type="button"
-            onClick={() => onEdit(transaction)}
-            className="grid size-8 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground transition-colors hover:text-primary"
-            aria-label={`Editar ${transaction.description}`}
-          >
-            <Pencil className="size-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => onDelete(transaction)}
-            className="grid size-8 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground transition-colors hover:text-destructive"
-            aria-label={`Excluir ${transaction.description}`}
-          >
-            <Trash2 className="size-4" />
-          </button>
-        </div>
-      </TableCell>
-    </TableRow>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10 }}>
+        <span style={{ fontFamily: "'JetBrains Mono'", fontSize: 14, fontWeight: 600, color: valueColor }}>
+          {signedValue}
+        </span>
+        <button
+          type="button"
+          onClick={() => onEdit(transaction)}
+          aria-label={`Editar ${transaction.description}`}
+          style={{
+            width: 28,
+            height: 28,
+            borderRadius: 7,
+            border: 'none',
+            background: 'none',
+            color: 'var(--text-faint)',
+            cursor: 'pointer',
+            display: 'grid',
+            placeItems: 'center',
+          }}
+        >
+          <Icon name="edit" size={17} />
+        </button>
+        <button
+          type="button"
+          onClick={() => onDelete(transaction)}
+          aria-label={`Excluir ${transaction.description}`}
+          style={{
+            width: 28,
+            height: 28,
+            borderRadius: 7,
+            border: 'none',
+            background: 'none',
+            color: 'var(--text-faint)',
+            cursor: 'pointer',
+            display: 'grid',
+            placeItems: 'center',
+          }}
+        >
+          <Icon name="delete" size={17} />
+        </button>
+      </div>
+    </div>
   );
 }

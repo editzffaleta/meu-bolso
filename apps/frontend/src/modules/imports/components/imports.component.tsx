@@ -2,9 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { Combobox } from '@/shared/components/ui/combobox';
-import { Label } from '@/shared/components/ui/label';
-import { PageSectionHeader } from '@/shared/components/ui/page-section-header';
+import { Icon } from '@/shared/components/ui/icon';
 import { getMessage } from '@/shared/i18n';
 import { useAuth } from '@/modules/auth/context/auth.context';
 import { listAccounts, AccountsApiError } from '@/modules/accounts/util/accounts-api.util';
@@ -101,38 +99,69 @@ export default function ImportsComponent() {
     setResult(null);
   }
 
-  const accountOptions = accounts.map((account) => ({
-    value: account.id,
-    label: account.institution ? `${account.name} · ${account.institution}` : account.name,
-  }));
-
   return (
-    <div className="flex flex-col gap-6">
-      <PageSectionHeader
-        badge="Importar"
-        title="Importar extrato"
-        subtitle="Envie um arquivo CSV ou OFX do seu banco para criar as transações automaticamente."
-      />
-
-      <div className="grid gap-4.5 lg:grid-cols-2 lg:items-start">
-        <div className="rounded-2xl border border-border bg-card p-5.5 shadow-sm">
-          <div className="mb-4 space-y-1">
-            <p className="text-sm font-bold">Importar extrato</p>
-            <p className="text-xs text-muted-foreground">
-              Envie um arquivo <strong>CSV</strong> ou <strong>OFX</strong> do seu banco.
-            </p>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18, alignItems: 'start', animation: 'fadeUp .35s ease' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div
+          style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--card-border)',
+            borderRadius: 16,
+            padding: 22,
+            boxShadow: 'var(--shadow-card)',
+          }}
+        >
+          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>Importar extrato</div>
+          <div style={{ fontSize: 12.5, color: 'var(--text-dim)', marginBottom: 16 }}>
+            Envie um arquivo <b>CSV</b> ou <b>OFX</b> do seu banco.
           </div>
 
-          <div className="mb-4.5 space-y-2">
-            <Label>Conta de destino</Label>
-            <Combobox
-              options={accountOptions}
-              value={accountId}
-              onChange={setAccountId}
-              placeholder="Selecione a conta"
-              emptyText="Nenhuma conta cadastrada."
+          <label
+            htmlFor="import-account-select"
+            style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 8 }}
+          >
+            Conta de destino
+          </label>
+          <div style={{ position: 'relative', marginBottom: 18 }}>
+            <select
+              id="import-account-select"
               data-testid="import-account-select"
-            />
+              value={accountId}
+              onChange={(event) => setAccountId(event.target.value)}
+              style={{
+                width: '100%',
+                appearance: 'none',
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                borderRadius: 10,
+                padding: '11px 40px 11px 14px',
+                fontSize: 14,
+                fontWeight: 600,
+                color: 'var(--text)',
+                cursor: 'pointer',
+              }}
+            >
+              <option value="" disabled>
+                Selecione a conta
+              </option>
+              {accounts.map((account) => (
+                <option key={account.id} value={account.id}>
+                  {account.institution ? `${account.name} · ${account.institution}` : account.name}
+                </option>
+              ))}
+            </select>
+            <span
+              style={{
+                position: 'absolute',
+                right: 14,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                pointerEvents: 'none',
+                color: 'var(--text-faint)',
+              }}
+            >
+              <Icon name="expand_more" size={19} />
+            </span>
           </div>
 
           {result ? (
@@ -146,9 +175,9 @@ export default function ImportsComponent() {
             />
           )}
         </div>
-
-        <ImportHistoryList imports={imports} isLoading={isLoadingHistory} />
       </div>
+
+      <ImportHistoryList imports={imports} isLoading={isLoadingHistory} />
     </div>
   );
 }

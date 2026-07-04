@@ -1,12 +1,11 @@
 'use client';
 
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ShellProvider } from '@/shared/context/shell.context';
-import { AdminShell } from '@/shared/template/admin-shell.component';
-import { AppSidebarNavigation } from '@/shared/navigation/app-sidebar-navigation.component';
-import { APP_NAVIGATION_SECTIONS, DASHBOARD_ROUTE } from '@/shared/navigation/app-navigation.config';
+import { MeuBolsoShell } from '@/shared/template/meu-bolso-shell.component';
 import { AuthGuard } from '@/modules/auth/guard/auth.guard';
 import { useAuth } from '@/modules/auth/context/auth.context';
+import { listAccounts } from '@/modules/accounts/util/accounts-api.util';
 
 export default function PrivateGroupLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -18,7 +17,24 @@ export default function PrivateGroupLayout({ children }: { children: React.React
 
 function PrivateShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user, token, logout } = useAuth();
+  const [saldoConsolidado, setSaldoConsolidado] = useState<number | null>(null);
+
+  const loadSaldo = useCallback(async () => {
+    if (!token) return;
+    try {
+      const accounts = await listAccounts(token);
+      const total = accounts.reduce((sum, account) => sum + account.initialBalance, 0);
+      setSaldoConsolidado(total);
+    } catch {
+      setSaldoConsolidado(null);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- carregamento inicial de dados via API externa
+    loadSaldo();
+  }, [loadSaldo]);
 
   function handleLogout() {
     logout();
@@ -26,16 +42,13 @@ function PrivateShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <ShellProvider defaultOpen>
-      <AdminShell
-        sidebar={<AppSidebarNavigation modules={APP_NAVIGATION_SECTIONS} defaultModuleId="meu-bolso" />}
-        logoHref={DASHBOARD_ROUTE}
-        userName={user?.name}
-        userEmail={user?.email}
-        onLogout={handleLogout}
-      >
-        {children}
-      </AdminShell>
-    </ShellProvider>
+    <MeuBolsoShell
+      userName={user?.name}
+      userEmail={user?.email}
+      saldoConsolidado={saldoConsolidado}
+      onLogout={handleLogout}
+    >
+      {children}
+    </MeuBolsoShell>
   );
 }

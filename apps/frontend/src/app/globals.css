@@ -3,51 +3,24 @@
 :root {
   color-scheme: light;
 
-  /* Base */
-  --background: #f4f5f7;
-  --foreground: #0e1621;
-
-  /* Surface */
-  --card: #ffffff;
-  --card-foreground: #0e1621;
-  --popover: #ffffff;
-  --popover-foreground: #0e1621;
-
-  /* Semantic */
-  --muted: #f3f4f6;
-  --muted-foreground: #5a6572;
+  /* Base — tokens verbatim do mockup Claude Design (linhas 24-34) */
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --surface-2: #f3f4f6;
+  --surface-3: #e8eaee;
+  --text: #0e1621;
+  --text-dim: #5a6572;
+  --text-faint: #98a1ad;
   --border: #ebedf1;
-  --input: #ebedf1;
-  --ring: #059669;
-
-  /* Primary (verde-esmeralda meu-bolso) */
   --primary: #059669;
   --primary-hover: #047857;
-  --primary-foreground: #ffffff;
   --primary-soft: #e7f6ef;
   --primary-line: #bfe6d3;
-
-  /* Secondary */
-  --secondary: #e8eaee;
-  --secondary-foreground: #0e1621;
-
-  /* Accent (hover em menus) */
-  --accent: #f3f4f6;
-  --accent-foreground: #0e1621;
-
-  /* Destructive / danger */
-  --destructive: #dc2626;
-  --destructive-foreground: #ffffff;
-
-  /* Semânticas adicionais */
-  --success: #16a34a;
-  --success-foreground: #ffffff;
-  --warning: #d97706;
-  --warning-foreground: #ffffff;
-  --danger: #dc2626;
-  --danger-foreground: #ffffff;
-
-  /* Navegação (sidebar sempre em tom escuro, como no mockup) */
+  --card-border: transparent;
+  --shadow: 0 1px 2px rgba(17, 24, 39, 0.05);
+  --shadow-card: 0 1px 2px rgba(17, 24, 39, 0.04), 0 12px 28px -14px rgba(17, 24, 39, 0.14);
+  --shadow-md: 0 8px 22px -8px rgba(17, 24, 39, 0.14);
+  --shadow-lg: 0 28px 56px -18px rgba(17, 24, 39, 0.22);
   --nav-bg: #111b17;
   --nav-text: rgba(233, 240, 236, 0.66);
   --nav-active: #ffffff;
@@ -55,48 +28,53 @@
   --nav-border: rgba(255, 255, 255, 0.08);
   --nav-muted: rgba(233, 240, 236, 0.45);
 
-  --shadow-card: 0 1px 2px rgba(17, 24, 39, 0.04), 0 12px 28px -14px rgba(17, 24, 39, 0.14);
+  /* Aliases usados pelo restante do app (shadcn/Tailwind) */
+  --background: var(--bg);
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--surface);
+  --popover-foreground: var(--text);
+  --muted: var(--surface-2);
+  --muted-foreground: var(--text-dim);
+  --input: var(--border);
+  --ring: var(--primary);
+  --primary-foreground: #ffffff;
+  --secondary: var(--surface-3);
+  --secondary-foreground: var(--text);
+  --accent: var(--surface-2);
+  --accent-foreground: var(--text);
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --success: #16a34a;
+  --success-foreground: #ffffff;
+  --warning: #d97706;
+  --warning-foreground: #ffffff;
+  --danger: #dc2626;
+  --danger-foreground: #ffffff;
 }
 
 .dark {
   color-scheme: dark;
 
-  --background: #0a0f13;
-  --foreground: #e8eef2;
-
-  --card: #141c25;
-  --card-foreground: #e8eef2;
-  --popover: #1c2530;
-  --popover-foreground: #e8eef2;
-
-  --muted: #1c2530;
-  --muted-foreground: #93a2ac;
+  /* Base — tokens verbatim do mockup Claude Design ([data-theme="dark"], linhas 35-44) */
+  --bg: #0a0f13;
+  --surface: #141c25;
+  --surface-2: #1c2530;
+  --surface-3: #27313d;
+  --text: #e8eef2;
+  --text-dim: #93a2ac;
+  --text-faint: #5f6e78;
   --border: #232f3a;
-  --input: #232f3a;
-  --ring: #10b981;
-
   --primary: #10b981;
   --primary-hover: #34d399;
-  --primary-foreground: #04140f;
   --primary-soft: #0f2a22;
   --primary-line: #1c5e4b;
-
-  --secondary: #27313d;
-  --secondary-foreground: #e8eef2;
-
-  --accent: #1c2530;
-  --accent-foreground: #e8eef2;
-
-  --destructive: #ef4444;
-  --destructive-foreground: #0a0f13;
-
-  --success: #22c55e;
-  --success-foreground: #04140f;
-  --warning: #f59e0b;
-  --warning-foreground: #1a1200;
-  --danger: #ef4444;
-  --danger-foreground: #0a0f13;
-
+  --card-border: #212c37;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 14px 30px -18px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 8px 20px -6px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 28px 56px -14px rgba(0, 0, 0, 0.65);
   --nav-bg: #0b1319;
   --nav-text: rgba(232, 242, 238, 0.62);
   --nav-active: #ffffff;
@@ -104,7 +82,30 @@
   --nav-border: rgba(255, 255, 255, 0.06);
   --nav-muted: rgba(232, 242, 238, 0.42);
 
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 14px 30px -18px rgba(0, 0, 0, 0.5);
+  /* Aliases usados pelo restante do app (shadcn/Tailwind) */
+  --background: var(--bg);
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--surface-2);
+  --popover-foreground: var(--text);
+  --muted: var(--surface-2);
+  --muted-foreground: var(--text-dim);
+  --input: var(--border);
+  --ring: var(--primary);
+  --primary-foreground: #04140f;
+  --secondary: var(--surface-3);
+  --secondary-foreground: var(--text);
+  --accent: var(--surface-2);
+  --accent-foreground: var(--text);
+  --destructive: #ef4444;
+  --destructive-foreground: #0a0f13;
+  --success: #22c55e;
+  --success-foreground: #04140f;
+  --warning: #f59e0b;
+  --warning-foreground: #1a1200;
+  --danger: #ef4444;
+  --danger-foreground: #0a0f13;
 }
 
 @theme inline {

@@ -1,13 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Plus, Receipt } from 'lucide-react';
 import { toast } from 'sonner';
-import { Button } from '@/shared/components/ui/button';
+import { Icon } from '@/shared/components/ui/icon';
 import { DeleteConfirmationDialog } from '@/shared/components/ui/delete-confirmation-dialog';
-import { PageSectionHeader } from '@/shared/components/ui/page-section-header';
-import { PaginationControls } from '@/shared/components/ui/pagination-controls';
-import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/shared/components/ui/table';
 import { getMessage } from '@/shared/i18n';
 import { useAuth } from '@/modules/auth/context/auth.context';
 import { listAccounts, AccountsApiError } from '@/modules/accounts/util/accounts-api.util';
@@ -181,18 +177,38 @@ export default function TransactionsComponent() {
   const totalPages = Math.max(1, Math.ceil(total / DEFAULT_PAGE_SIZE));
 
   return (
-    <div className="flex flex-col gap-6">
-      <PageSectionHeader
-        badge="Transações"
-        title="Transações"
-        subtitle="Acompanhe receitas e despesas da sua conta"
-        aside={
-          <Button onClick={handleOpenCreate}>
-            <Plus className="size-4" />
-            Nova transação
-          </Button>
-        }
-      />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, animation: 'fadeUp .35s ease' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          flexWrap: 'wrap',
+          gap: 12,
+        }}
+      >
+        <button
+          type="button"
+          onClick={handleOpenCreate}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 7,
+            background: 'var(--primary)',
+            border: 'none',
+            borderRadius: 10,
+            padding: '10px 16px',
+            fontSize: 13.5,
+            fontWeight: 600,
+            color: '#fff',
+            cursor: 'pointer',
+            boxShadow: 'var(--shadow-md)',
+          }}
+        >
+          <Icon name="add" size={19} />
+          Nova transação
+        </button>
+      </div>
 
       <TransactionFiltersBar
         filters={filters}
@@ -207,41 +223,118 @@ export default function TransactionsComponent() {
       ) : transactions.length === 0 ? (
         <EmptyTransactionsState onCreate={handleOpenCreate} />
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Data</TableHead>
-                <TableHead>Descrição</TableHead>
-                <TableHead>Categoria</TableHead>
-                <TableHead>Conta</TableHead>
-                <TableHead>Origem</TableHead>
-                <TableHead className="text-right">Valor</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {transactions.map((transaction) => (
-                <TransactionRow
-                  key={transaction.id}
-                  transaction={transaction}
-                  account={accounts.find((account) => account.id === transaction.accountId)}
-                  category={categories.find((category) => category.id === transaction.categoryId)}
-                  onEdit={handleOpenEdit}
-                  onDelete={setTransactionPendingDeletion}
-                />
-              ))}
-            </TableBody>
-          </Table>
+        <div
+          style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--card-border)',
+            borderRadius: 16,
+            boxShadow: 'var(--shadow-card)',
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '92px 1fr 150px 140px 130px 130px',
+              gap: 12,
+              padding: '13px 22px',
+              borderBottom: '1px solid var(--border)',
+              fontSize: 11.5,
+              fontWeight: 600,
+              color: 'var(--text-faint)',
+              textTransform: 'uppercase',
+              letterSpacing: '.05em',
+              background: 'var(--surface-2)',
+            }}
+          >
+            <div>Data</div>
+            <div>Descrição</div>
+            <div>Categoria</div>
+            <div>Conta</div>
+            <div>Origem</div>
+            <div style={{ textAlign: 'right' }}>Valor</div>
+          </div>
 
-          <div className="border-t border-border p-4">
-            <PaginationControls
-              page={page}
-              totalPages={totalPages}
-              totalItems={total}
-              totalLabel="transações"
-              onPageChange={setPage}
-              disabled={isLoading}
+          {transactions.map((transaction) => (
+            <TransactionRow
+              key={transaction.id}
+              transaction={transaction}
+              account={accounts.find((account) => account.id === transaction.accountId)}
+              category={categories.find((category) => category.id === transaction.categoryId)}
+              onEdit={handleOpenEdit}
+              onDelete={setTransactionPendingDeletion}
             />
+          ))}
+
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '14px 22px',
+            }}
+          >
+            <div style={{ fontSize: 13, color: 'var(--text-dim)' }}>{total} transações</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <button
+                type="button"
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+                disabled={page <= 1}
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: 8,
+                  border: '1px solid var(--border)',
+                  background: 'var(--surface)',
+                  color: 'var(--text-faint)',
+                  cursor: page <= 1 ? 'default' : 'pointer',
+                  display: 'grid',
+                  placeItems: 'center',
+                  opacity: page <= 1 ? 0.5 : 1,
+                }}
+              >
+                <Icon name="chevron_left" size={18} />
+              </button>
+              {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
+                <button
+                  key={pageNumber}
+                  type="button"
+                  onClick={() => setPage(pageNumber)}
+                  style={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: 8,
+                    border: `1px solid ${pageNumber === page ? 'var(--primary)' : 'var(--border)'}`,
+                    background: pageNumber === page ? 'var(--primary)' : 'var(--surface)',
+                    color: pageNumber === page ? '#fff' : 'var(--text-dim)',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    fontSize: 13,
+                  }}
+                >
+                  {pageNumber}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                disabled={page >= totalPages}
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: 8,
+                  border: '1px solid var(--border)',
+                  background: 'var(--surface)',
+                  color: 'var(--text-faint)',
+                  cursor: page >= totalPages ? 'default' : 'pointer',
+                  display: 'grid',
+                  placeItems: 'center',
+                  opacity: page >= totalPages ? 0.5 : 1,
+                }}
+              >
+                <Icon name="chevron_right" size={18} />
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -274,11 +367,23 @@ export default function TransactionsComponent() {
 
 function TransactionsSkeleton() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-border" aria-busy="true">
+    <div
+      style={{
+        borderRadius: 16,
+        border: '1px solid var(--border)',
+        overflow: 'hidden',
+      }}
+      aria-busy="true"
+    >
       {Array.from({ length: 8 }).map((_, index) => (
         <div
           key={`transaction-skeleton-${index}`}
-          className="h-16 animate-pulse border-b border-border bg-muted/40 last:border-b-0"
+          style={{
+            height: 64,
+            borderBottom: '1px solid var(--border)',
+            background: 'var(--surface-2)',
+            animation: 'pulse 1.5s ease-in-out infinite',
+          }}
         />
       ))}
     </div>
@@ -287,20 +392,56 @@ function TransactionsSkeleton() {
 
 function EmptyTransactionsState({ onCreate }: { onCreate: () => void }) {
   return (
-    <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-border py-16 text-center">
-      <span className="grid size-16 place-items-center rounded-2xl bg-primary/10">
-        <Receipt className="size-8 text-primary" />
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 16,
+        borderRadius: 16,
+        border: '2px dashed var(--border)',
+        padding: '64px 20px',
+        textAlign: 'center',
+      }}
+    >
+      <span
+        style={{
+          width: 64,
+          height: 64,
+          borderRadius: 16,
+          display: 'grid',
+          placeItems: 'center',
+          background: 'var(--primary-soft)',
+        }}
+      >
+        <Icon name="search_off" size={32} color="var(--primary)" />
       </span>
-      <div className="space-y-1">
-        <h3 className="text-lg font-bold">Nenhuma transação encontrada</h3>
-        <p className="text-sm text-muted-foreground">
+      <div>
+        <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Nenhuma transação encontrada</h3>
+        <p style={{ fontSize: 13, color: 'var(--text-dim)' }}>
           Crie sua primeira transação para começar a acompanhar suas finanças.
         </p>
       </div>
-      <Button onClick={onCreate}>
-        <Plus className="size-4" />
+      <button
+        type="button"
+        onClick={onCreate}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 7,
+          background: 'var(--primary)',
+          border: 'none',
+          borderRadius: 10,
+          padding: '10px 16px',
+          fontSize: 13.5,
+          fontWeight: 600,
+          color: '#fff',
+          cursor: 'pointer',
+        }}
+      >
+        <Icon name="add" size={19} />
         Nova transação
-      </Button>
+      </button>
     </div>
   );
 }

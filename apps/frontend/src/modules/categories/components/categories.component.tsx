@@ -1,11 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Plus, Tags } from 'lucide-react';
 import { toast } from 'sonner';
-import { Button } from '@/shared/components/ui/button';
+import { Icon } from '@/shared/components/ui/icon';
 import { DeleteConfirmationDialog } from '@/shared/components/ui/delete-confirmation-dialog';
-import { PageSectionHeader } from '@/shared/components/ui/page-section-header';
 import { getMessage } from '@/shared/i18n';
 import { useAuth } from '@/modules/auth/context/auth.context';
 import { CategorizationRulesComponent } from '@/modules/categories/components/categorization-rules.component';
@@ -123,26 +121,62 @@ export default function CategoriesComponent() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <PageSectionHeader
-        badge="Categorias"
-        title="Categorias"
-        subtitle="Organize suas transações por categoria"
-        aside={
-          <Button onClick={handleOpenCreate}>
-            <Plus className="size-4" />
-            Nova categoria
-          </Button>
-        }
-      />
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '1.15fr 1fr',
+        gap: 18,
+        alignItems: 'start',
+        animation: 'fadeUp .35s ease',
+      }}
+    >
+      <div
+        style={{
+          background: 'var(--surface)',
+          border: '1px solid var(--card-border)',
+          borderRadius: 16,
+          boxShadow: 'var(--shadow-card)',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '18px 20px',
+            borderBottom: '1px solid var(--border)',
+          }}
+        >
+          <div style={{ fontSize: 15, fontWeight: 700 }}>Categorias</div>
+          <button
+            type="button"
+            onClick={handleOpenCreate}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              background: 'var(--primary-soft)',
+              border: '1px solid var(--primary-line)',
+              borderRadius: 9,
+              padding: '7px 12px',
+              fontSize: 13,
+              fontWeight: 600,
+              color: 'var(--primary)',
+              cursor: 'pointer',
+            }}
+          >
+            <Icon name="add" size={17} />
+            Nova
+          </button>
+        </div>
 
-      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
         {isLoading ? (
           <CategoriesSkeleton />
         ) : categories.length === 0 ? (
           <EmptyCategoriesState onCreate={handleOpenCreate} />
         ) : (
-          <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+          <div>
             {categories.map((category) => (
               <CategoryListItem
                 key={category.id}
@@ -153,9 +187,9 @@ export default function CategoriesComponent() {
             ))}
           </div>
         )}
-
-        <CategorizationRulesComponent categories={categories} />
       </div>
+
+      <CategorizationRulesComponent categories={categories} />
 
       <CategoryFormDialog
         open={isFormOpen}
@@ -183,11 +217,16 @@ export default function CategoriesComponent() {
 
 function CategoriesSkeleton() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-border" aria-busy="true">
+    <div aria-busy="true">
       {Array.from({ length: 5 }).map((_, index) => (
         <div
           key={`category-skeleton-${index}`}
-          className="h-16 animate-pulse border-b border-border bg-muted/40 last:border-b-0"
+          style={{
+            height: 64,
+            borderBottom: '1px solid var(--border)',
+            background: 'var(--surface-2)',
+            animation: 'pulse 1.5s ease-in-out infinite',
+          }}
         />
       ))}
     </div>
@@ -196,20 +235,54 @@ function CategoriesSkeleton() {
 
 function EmptyCategoriesState({ onCreate }: { onCreate: () => void }) {
   return (
-    <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-border py-16 text-center">
-      <span className="grid size-16 place-items-center rounded-2xl bg-primary/10">
-        <Tags className="size-8 text-primary" />
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 16,
+        padding: '56px 20px',
+        textAlign: 'center',
+      }}
+    >
+      <span
+        style={{
+          width: 64,
+          height: 64,
+          borderRadius: 16,
+          display: 'grid',
+          placeItems: 'center',
+          background: 'var(--primary-soft)',
+        }}
+      >
+        <Icon name="sell" size={32} color="var(--primary)" />
       </span>
-      <div className="space-y-1">
-        <h3 className="text-lg font-bold">Nenhuma categoria cadastrada</h3>
-        <p className="text-sm text-muted-foreground">
+      <div>
+        <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Nenhuma categoria cadastrada</h3>
+        <p style={{ fontSize: 13, color: 'var(--text-dim)' }}>
           Crie sua primeira categoria para organizar suas transações.
         </p>
       </div>
-      <Button onClick={onCreate}>
-        <Plus className="size-4" />
+      <button
+        type="button"
+        onClick={onCreate}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 7,
+          background: 'var(--primary)',
+          border: 'none',
+          borderRadius: 10,
+          padding: '10px 16px',
+          fontSize: 13.5,
+          fontWeight: 600,
+          color: '#fff',
+          cursor: 'pointer',
+        }}
+      >
+        <Icon name="add" size={19} />
         Nova categoria
-      </Button>
+      </button>
     </div>
   );
 }

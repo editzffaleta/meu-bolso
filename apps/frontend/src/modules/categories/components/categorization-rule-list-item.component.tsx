@@ -1,6 +1,6 @@
 'use client';
 
-import { X } from 'lucide-react';
+import { Icon } from '@/shared/components/ui/icon';
 import type { Category } from '@/modules/categories/types/category.type';
 import type { CategorizationRule } from '@/modules/categories/types/categorization-rule.type';
 
@@ -28,26 +28,64 @@ export function CategorizationRuleListItem({ rule, category, onDelete }: Categor
   const name = category?.name ?? 'Categoria removida';
 
   return (
-    <div className="flex items-center gap-3 border-b border-border px-5 py-3 last:border-b-0 transition-colors hover:bg-muted/40">
-      <span className="rounded-md border border-border bg-muted px-2.5 py-1 font-mono text-[13px] font-semibold">
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 11,
+        padding: '12px 20px',
+        borderBottom: '1px solid var(--border)',
+      }}
+    >
+      <span
+        style={{
+          fontFamily: "'JetBrains Mono'",
+          fontSize: 13,
+          fontWeight: 600,
+          background: 'var(--surface-2)',
+          border: '1px solid var(--border)',
+          padding: '4px 10px',
+          borderRadius: 7,
+        }}
+      >
         {rule.keyword}
       </span>
-      <span className="text-muted-foreground">&rarr;</span>
+      <Icon name="arrow_forward" size={18} color="var(--text-faint)" />
       <span
-        className="inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-[12.5px] font-semibold"
-        style={{ color, backgroundColor: hexToSoftBackground(color) }}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 7,
+          fontSize: 12.5,
+          fontWeight: 600,
+          padding: '4px 11px',
+          borderRadius: 20,
+          color,
+          background: hexToSoftBackground(color),
+        }}
       >
-        <span className="size-2 rounded-sm" style={{ backgroundColor: color }} />
+        <span style={{ width: 8, height: 8, borderRadius: 3, background: color }} />
         {name}
       </span>
 
       <button
         type="button"
         onClick={() => onDelete(rule)}
-        className="ml-auto grid size-7 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:text-destructive"
         aria-label={`Excluir regra ${rule.keyword}`}
+        style={{
+          marginLeft: 'auto',
+          width: 28,
+          height: 28,
+          borderRadius: 7,
+          border: 'none',
+          background: 'none',
+          color: 'var(--text-faint)',
+          cursor: 'pointer',
+          display: 'grid',
+          placeItems: 'center',
+        }}
       >
-        <X className="size-4" />
+        <Icon name="close" size={16} />
       </button>
     </div>
   );

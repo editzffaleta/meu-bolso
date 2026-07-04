@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, Receipt } from 'lucide-react';
+import { Icon } from '@/shared/components/ui/icon';
 import { LucideIconByKey } from '@/shared/components/ui/lucide-icon-by-key';
 import type { Category } from '@/modules/categories/types/category.type';
 import type { Transaction } from '@/modules/transactions/types/transaction.type';
@@ -30,43 +30,100 @@ export function DashboardRecentTransactionsCard({
   isLoading,
 }: DashboardRecentTransactionsCardProps) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-card)]">
-      <div className="flex items-center justify-between border-b border-border px-[22px] py-[18px]">
-        <h3 className="text-[15px] font-bold text-foreground">Últimas transações</h3>
+    <div
+      style={{
+        background: 'var(--surface)',
+        border: '1px solid var(--card-border)',
+        borderRadius: 16,
+        boxShadow: 'var(--shadow-card)',
+        overflow: 'hidden',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '18px 22px',
+          borderBottom: '1px solid var(--border)',
+        }}
+      >
+        <div style={{ fontSize: 15, fontWeight: 700 }}>Últimas transações</div>
         <Link
           href="/transacoes"
-          className="flex shrink-0 items-center gap-1 text-sm font-semibold text-primary transition-colors hover:text-primary-hover"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            fontSize: 13,
+            fontWeight: 600,
+            color: 'var(--primary)',
+            textDecoration: 'none',
+          }}
         >
           Ver todas
-          <ArrowRight className="size-4" />
+          <Icon name="arrow_forward" size={17} />
         </Link>
       </div>
 
       {isLoading ? (
-        <div className="space-y-2 p-[22px]" aria-busy="true">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 22 }} aria-busy="true">
           {Array.from({ length: 5 }).map((_, index) => (
-            <div key={`tx-skeleton-${index}`} className="h-16 animate-pulse rounded-xl border border-border bg-muted" />
+            <div
+              key={`tx-skeleton-${index}`}
+              style={{
+                height: 64,
+                borderRadius: 12,
+                border: '1px solid var(--border)',
+                background: 'var(--surface-2)',
+                animation: 'pulse 1.5s ease-in-out infinite',
+              }}
+            />
           ))}
         </div>
       ) : transactions.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-3 px-6 py-12 text-center">
-          <Receipt className="size-8 text-muted-foreground" aria-hidden />
-          <p className="text-sm text-muted-foreground">Nenhuma transação registrada neste mês.</p>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 12,
+            padding: '48px 20px',
+            textAlign: 'center',
+          }}
+        >
+          <Icon name="receipt_long" size={32} color="var(--text-faint)" />
+          <p style={{ fontSize: 14, color: 'var(--text-dim)' }}>Nenhuma transação registrada neste mês.</p>
         </div>
       ) : (
         <div>
           {transactions.map((transaction) => {
             const category = transaction.categoryId ? categoriesById.get(transaction.categoryId) : undefined;
             const isIncome = transaction.type === 'income';
+            const tint = category ? hexToSoftBackground(category.color) : 'rgba(148,163,184,0.15)';
 
             return (
               <div
                 key={transaction.id}
-                className="flex items-center gap-3.5 border-b border-border px-[22px] py-[13px] transition-colors last:border-b-0 hover:bg-muted/60"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 14,
+                  padding: '13px 22px',
+                  borderBottom: '1px solid var(--border)',
+                }}
               >
                 <span
-                  className="grid size-10 shrink-0 place-items-center rounded-[11px]"
-                  style={{ backgroundColor: category ? hexToSoftBackground(category.color) : 'rgba(148,163,184,0.15)' }}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 11,
+                    display: 'grid',
+                    placeItems: 'center',
+                    flexShrink: 0,
+                    background: tint,
+                  }}
                 >
                   <LucideIconByKey
                     name={category?.icon ?? null}
@@ -75,29 +132,51 @@ export function DashboardRecentTransactionsCard({
                   />
                 </span>
 
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-foreground">{transaction.description}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{formatDateBR(transaction.date)}</p>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 600,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {transaction.description}
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 2 }}>
+                    {formatDateBR(transaction.date)}
+                  </div>
                 </div>
 
                 <span
-                  className="shrink-0 rounded-full px-2.5 py-1 text-[11.5px] font-semibold"
                   style={{
-                    backgroundColor: category ? hexToSoftBackground(category.color) : 'rgba(148,163,184,0.15)',
+                    fontSize: 11.5,
+                    fontWeight: 600,
+                    padding: '4px 10px',
+                    borderRadius: 20,
                     color: category?.color ?? '#9CA3AF',
+                    background: tint,
+                    flexShrink: 0,
                   }}
                 >
                   {category?.name ?? 'Sem categoria'}
                 </span>
 
-                <span
-                  className={`font-mono-money w-[120px] shrink-0 text-right text-sm font-semibold ${
-                    isIncome ? 'text-success' : 'text-destructive'
-                  }`}
+                <div
+                  style={{
+                    width: 120,
+                    textAlign: 'right',
+                    fontFamily: "'JetBrains Mono'",
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: isIncome ? '#059669' : '#dc2626',
+                    flexShrink: 0,
+                  }}
                 >
                   {isIncome ? '+ ' : '- '}
                   {formatCurrencyBRL(transaction.amount)}
-                </span>
+                </div>
               </div>
             );
           })}

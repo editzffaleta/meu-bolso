@@ -1,7 +1,7 @@
 'use client';
 
-import { PieChart as PieChartIcon } from 'lucide-react';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
+import { Icon } from '@/shared/components/ui/icon';
 import { formatCurrencyBRL } from '@/modules/transactions/util/format-currency.util';
 import type { SpendingByCategoryOut } from '@/modules/analytics/types/analytics.type';
 
@@ -15,30 +15,58 @@ export function DashboardSpendingPieCard({ items, isLoading }: DashboardSpending
 
   return (
     <div
-      className="rounded-2xl border border-border bg-card p-[22px] shadow-[var(--shadow-card)]"
       data-testid="dashboard-chart-category"
+      style={{
+        background: 'var(--surface)',
+        border: '1px solid var(--card-border)',
+        borderRadius: 16,
+        padding: 22,
+        boxShadow: 'var(--shadow-card)',
+      }}
     >
-      <h3 className="mb-0.5 text-[15px] font-bold text-foreground">Gastos por categoria</h3>
-      <p className="mb-3.5 text-[12.5px] text-muted-foreground">Distribuição das despesas no mês selecionado</p>
+      <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 2 }}>Gastos por categoria</div>
+      <div style={{ fontSize: 12.5, color: 'var(--text-dim)', marginBottom: 14 }}>Mês selecionado</div>
 
       {isLoading ? (
-        <div className="h-80 animate-pulse rounded-2xl border border-border bg-muted" />
+        <div
+          style={{
+            height: 320,
+            borderRadius: 16,
+            border: '1px solid var(--border)',
+            background: 'var(--surface-2)',
+            animation: 'pulse 1.5s ease-in-out infinite',
+          }}
+        />
       ) : items.length === 0 ? (
-        <div className="flex h-80 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border bg-muted/60 px-6 text-center">
-          <PieChartIcon className="size-8 text-muted-foreground" aria-hidden />
-          <p className="text-sm text-muted-foreground">Nenhum gasto categorizado neste mês.</p>
+        <div
+          style={{
+            height: 320,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 12,
+            borderRadius: 16,
+            border: '1px dashed var(--border)',
+            background: 'var(--surface-2)',
+            padding: '0 24px',
+            textAlign: 'center',
+          }}
+        >
+          <Icon name="donut_small" size={32} color="var(--text-faint)" />
+          <p style={{ fontSize: 14, color: 'var(--text-dim)' }}>Nenhum gasto categorizado neste mês.</p>
         </div>
       ) : (
-        <div className="flex items-center gap-5">
-          <div className="relative shrink-0" style={{ width: 180, height: 180 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <div style={{ position: 'relative', flexShrink: 0, width: 180, height: 180 }}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Tooltip
                   contentStyle={{
                     border: '1px solid var(--border)',
                     borderRadius: '16px',
-                    backgroundColor: 'var(--card)',
-                    color: 'var(--card-foreground)',
+                    backgroundColor: 'var(--surface)',
+                    color: 'var(--text)',
                   }}
                   formatter={(value, name) => {
                     const numericValue = typeof value === 'number' ? value : Number(value ?? 0);
@@ -55,7 +83,7 @@ export function DashboardSpendingPieCard({ items, isLoading }: DashboardSpending
                   outerRadius={88}
                   paddingAngle={2}
                   cornerRadius={6}
-                  stroke="var(--card)"
+                  stroke="var(--surface)"
                   strokeWidth={2}
                 >
                   {items.map((item, index) => (
@@ -64,30 +92,49 @@ export function DashboardSpendingPieCard({ items, isLoading }: DashboardSpending
                 </Pie>
               </PieChart>
             </ResponsiveContainer>
-            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-[11px] text-muted-foreground">Total</span>
-              <span className="font-mono-money text-base font-bold text-foreground">{formatCurrencyBRL(total)}</span>
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                pointerEvents: 'none',
+              }}
+            >
+              <div style={{ fontSize: 11, color: 'var(--text-faint)' }}>Total</div>
+              <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 16, fontWeight: 700 }}>
+                {formatCurrencyBRL(total)}
+              </div>
             </div>
           </div>
 
-          <div className="flex min-w-0 flex-1 flex-col gap-2.5">
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 9, minWidth: 0 }}>
             {items.map((item) => {
               const percent = total > 0 ? (item.total / total) * 100 : 0;
               return (
                 <div
                   key={`${item.categoryId ?? 'sem-categoria'}-${item.name}`}
-                  className="flex items-center gap-2.5 text-[12.5px]"
+                  style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 12.5 }}
                 >
                   <span
-                    className="size-2.5 shrink-0 rounded-[3px]"
-                    style={{ backgroundColor: item.color }}
+                    style={{ width: 9, height: 9, borderRadius: 3, background: item.color, flexShrink: 0 }}
                     aria-hidden="true"
                   />
-                  <span className="min-w-0 flex-1 truncate text-muted-foreground">{item.name}</span>
-                  <span className="shrink-0 font-semibold text-foreground">{percent.toFixed(0)}%</span>
-                  <span className="font-mono-money shrink-0 text-xs text-muted-foreground">
-                    {formatCurrencyBRL(item.total)}
+                  <span
+                    style={{
+                      flex: 1,
+                      color: 'var(--text-dim)',
+                      minWidth: 0,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {item.name}
                   </span>
+                  <span style={{ fontWeight: 600 }}>{percent.toFixed(0)}%</span>
                 </div>
               );
             })}

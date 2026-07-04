@@ -1,13 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { PiggyBank, Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import { Button } from '@/shared/components/ui/button';
+import { Icon } from '@/shared/components/ui/icon';
 import { DeleteConfirmationDialog } from '@/shared/components/ui/delete-confirmation-dialog';
-import { Input } from '@/shared/components/ui/input';
-import { Label } from '@/shared/components/ui/label';
-import { PageSectionHeader } from '@/shared/components/ui/page-section-header';
 import { getMessage } from '@/shared/i18n';
 import { useAuth } from '@/modules/auth/context/auth.context';
 import { listCategories } from '@/modules/categories/util/categories-api.util';
@@ -150,40 +146,87 @@ export default function BudgetsComponent() {
   const totalSpent = progress.reduce((sum, item) => sum + item.spent, 0);
 
   return (
-    <div className="flex flex-col gap-6">
-      <PageSectionHeader
-        badge="Orçamentos"
-        title="Orçamentos"
-        subtitle="Planeje quanto pretende gastar por categoria em cada mês"
-        aside={
-          <Button onClick={handleOpenCreate}>
-            <Plus className="size-4" />
-            Novo orçamento
-          </Button>
-        }
-      />
-
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="flex flex-col gap-1">
-          <Label htmlFor="budgets-month">Mês</Label>
-          <Input
-            id="budgets-month"
-            type="month"
-            value={month}
-            onChange={(event) => setMonth(event.target.value)}
-            className="w-44"
-          />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, animation: 'fadeUp .35s ease' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+        <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+          <div
+            style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--card-border)',
+              borderRadius: 12,
+              padding: '12px 18px',
+              boxShadow: 'var(--shadow-card)',
+            }}
+          >
+            <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>Orçado no mês</div>
+            <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 19, fontWeight: 700, marginTop: 3 }}>
+              {formatCurrencyBRL(totalLimit)}
+            </div>
+          </div>
+          <div
+            style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--card-border)',
+              borderRadius: 12,
+              padding: '12px 18px',
+              boxShadow: 'var(--shadow-card)',
+            }}
+          >
+            <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>Gasto até agora</div>
+            <div
+              style={{
+                fontFamily: "'JetBrains Mono'",
+                fontSize: 19,
+                fontWeight: 700,
+                marginTop: 3,
+                color: 'var(--primary)',
+              }}
+            >
+              {formatCurrencyBRL(totalSpent)}
+            </div>
+          </div>
+          <div>
+            <label htmlFor="budgets-month" style={{ display: 'none' }}>
+              Mês
+            </label>
+            <input
+              id="budgets-month"
+              type="month"
+              value={month}
+              onChange={(event) => setMonth(event.target.value)}
+              style={{
+                padding: '10px 14px',
+                borderRadius: 10,
+                border: '1px solid var(--border)',
+                background: 'var(--surface)',
+                color: 'var(--text)',
+                fontSize: 14,
+                outline: 'none',
+              }}
+            />
+          </div>
         </div>
-
-        <div className="rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
-          <div className="text-xs text-muted-foreground">Orçado no mês</div>
-          <div className="mt-1 font-mono text-lg font-bold">{formatCurrencyBRL(totalLimit)}</div>
-        </div>
-
-        <div className="rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
-          <div className="text-xs text-muted-foreground">Gasto até agora</div>
-          <div className="mt-1 font-mono text-lg font-bold text-primary">{formatCurrencyBRL(totalSpent)}</div>
-        </div>
+        <button
+          type="button"
+          onClick={handleOpenCreate}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 7,
+            background: 'var(--primary)',
+            border: 'none',
+            borderRadius: 10,
+            padding: '10px 16px',
+            fontSize: 13.5,
+            fontWeight: 600,
+            color: '#fff',
+            cursor: 'pointer',
+            boxShadow: 'var(--shadow-md)',
+          }}
+        >
+          <Icon name="add" size={19} />
+          Novo orçamento
+        </button>
       </div>
 
       {isLoading ? (
@@ -191,7 +234,7 @@ export default function BudgetsComponent() {
       ) : budgets.length === 0 ? (
         <EmptyBudgetsState onCreate={handleOpenCreate} />
       ) : (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 16 }}>
           {budgets.map((budget) => (
             <BudgetProgressCard
               key={budget.id}
@@ -233,11 +276,17 @@ export default function BudgetsComponent() {
 
 function BudgetsSkeleton() {
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2" aria-busy="true">
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 16 }} aria-busy="true">
       {Array.from({ length: 4 }).map((_, index) => (
         <div
           key={`budget-skeleton-${index}`}
-          className="h-40 animate-pulse rounded-2xl border border-border bg-muted/40"
+          style={{
+            height: 160,
+            borderRadius: 16,
+            border: '1px solid var(--border)',
+            background: 'var(--surface)',
+            animation: 'pulse 1.5s ease-in-out infinite',
+          }}
         />
       ))}
     </div>
@@ -246,20 +295,56 @@ function BudgetsSkeleton() {
 
 function EmptyBudgetsState({ onCreate }: { onCreate: () => void }) {
   return (
-    <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-border py-16 text-center">
-      <span className="grid size-16 place-items-center rounded-2xl bg-primary/10">
-        <PiggyBank className="size-8 text-primary" />
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 16,
+        borderRadius: 16,
+        border: '2px dashed var(--border)',
+        padding: '64px 20px',
+        textAlign: 'center',
+      }}
+    >
+      <span
+        style={{
+          width: 64,
+          height: 64,
+          borderRadius: 16,
+          display: 'grid',
+          placeItems: 'center',
+          background: 'var(--primary-soft)',
+        }}
+      >
+        <Icon name="savings" size={32} color="var(--primary)" />
       </span>
-      <div className="space-y-1">
-        <h3 className="text-lg font-bold">Nenhum orçamento definido</h3>
-        <p className="text-sm text-muted-foreground">
+      <div>
+        <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Nenhum orçamento definido</h3>
+        <p style={{ fontSize: 13, color: 'var(--text-dim)' }}>
           Defina um limite mensal por categoria para acompanhar seus gastos.
         </p>
       </div>
-      <Button onClick={onCreate}>
-        <Plus className="size-4" />
+      <button
+        type="button"
+        onClick={onCreate}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 7,
+          background: 'var(--primary)',
+          border: 'none',
+          borderRadius: 10,
+          padding: '10px 16px',
+          fontSize: 13.5,
+          fontWeight: 600,
+          color: '#fff',
+          cursor: 'pointer',
+        }}
+      >
+        <Icon name="add" size={19} />
         Novo orçamento
-      </Button>
+      </button>
     </div>
   );
 }

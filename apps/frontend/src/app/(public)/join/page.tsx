@@ -3,9 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
-import { Label } from '@/shared/components/ui/label';
+import { Icon } from '@/shared/components/ui/icon';
 import { getMessage } from '@/shared/i18n';
 import type { ApiErrorResponse } from '@/shared/types/api-error.type';
 import { useAuth } from '@/modules/auth/context/auth.context';
@@ -14,6 +12,19 @@ import { DASHBOARD_ROUTE } from '@/shared/navigation/app-navigation.config';
 type Mode = 'login' | 'register';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+const DEMO_EMAIL = 'demo@meubolso.app';
+const DEMO_PASSWORD = 'demo123456';
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  padding: '12px 14px',
+  borderRadius: 10,
+  border: '1px solid var(--border)',
+  background: 'var(--surface)',
+  color: 'var(--text)',
+  fontSize: 14,
+  outline: 'none',
+};
 
 export default function JoinPage() {
   const [mode, setMode] = useState<Mode>('register');
@@ -27,22 +38,27 @@ export default function JoinPage() {
   }, [status, router]);
 
   if (status === 'loading' || status === 'authenticated') {
-    return <div aria-busy="true" className="min-h-screen bg-background" />;
+    return <div aria-busy="true" data-theme="light" style={{ minHeight: '100vh', background: 'var(--bg)' }} />;
   }
 
   return (
-    <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[1.05fr_1fr]">
+    <div
+      data-theme="light"
+      style={{
+        minHeight: '100vh',
+        display: 'grid',
+        gridTemplateColumns: '1.05fr 1fr',
+        color: 'var(--text)',
+        fontFamily: 'Inter, system-ui, sans-serif',
+      }}
+    >
       <BrandPanel />
 
-      <div className="flex items-center justify-center px-6 py-10">
-        <div className="w-full max-w-sm">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 32px' }}>
+        <div style={{ width: '100%', maxWidth: 400, animation: 'fadeUp .4s ease' }}>
           <ModeTabs mode={mode} onChange={setMode} />
 
-          {mode === 'register' ? (
-            <RegisterForm key="register" />
-          ) : (
-            <LoginForm key="login" />
-          )}
+          {mode === 'register' ? <RegisterForm key="register" /> : <LoginForm key="login" />}
         </div>
       </div>
     </div>
@@ -51,52 +67,139 @@ export default function JoinPage() {
 
 function BrandPanel() {
   return (
-    <div className="relative hidden flex-col justify-between overflow-hidden bg-primary px-14 py-14 text-primary-foreground lg:flex">
-      <div className="relative z-10 flex items-center gap-3">
-        <div className="flex size-10 items-center justify-center rounded-xl bg-white font-black text-primary">
+    <div
+      style={{
+        background: 'var(--primary)',
+        color: '#fff',
+        padding: '56px 60px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative', zIndex: 2 }}>
+        <div
+          style={{
+            width: 42,
+            height: 42,
+            borderRadius: 12,
+            background: '#fff',
+            color: 'var(--primary)',
+            display: 'grid',
+            placeItems: 'center',
+            fontWeight: 800,
+            fontSize: 22,
+            fontFamily: 'Inter',
+          }}
+        >
           m
         </div>
-        <span className="text-xl font-bold tracking-tight">meu-bolso</span>
+        <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-.02em' }}>meu-bolso</span>
       </div>
 
-      <div className="relative z-10 max-w-md">
-        <h1 className="mb-4 text-4xl font-extrabold leading-tight tracking-tight">
+      <div style={{ position: 'relative', zIndex: 2, maxWidth: 420 }}>
+        <h1
+          style={{
+            fontSize: 40,
+            lineHeight: 1.1,
+            fontWeight: 800,
+            letterSpacing: '-.03em',
+            marginBottom: 18,
+          }}
+        >
           Suas finanças, finalmente sob controle.
         </h1>
-        <p className="text-base leading-relaxed text-primary-foreground/85">
-          Acompanhe receitas e despesas, importe extratos, defina orçamentos e veja
-          para onde seu dinheiro está indo — tudo em um só lugar.
+        <p style={{ fontSize: 16, lineHeight: 1.6, color: 'rgba(255,255,255,.85)' }}>
+          Acompanhe receitas e despesas, importe extratos, defina orçamentos e veja para onde
+          seu dinheiro está indo — tudo em um só lugar.
         </p>
+        <div style={{ display: 'flex', gap: 14, marginTop: 34 }}>
+          <div
+            style={{
+              background: 'rgba(255,255,255,.12)',
+              border: '1px solid rgba(255,255,255,.18)',
+              borderRadius: 14,
+              padding: '16px 18px',
+              backdropFilter: 'blur(4px)',
+            }}
+          >
+            <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 22, fontWeight: 700 }}>R$ 17.769</div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,.75)', marginTop: 2 }}>Saldo consolidado</div>
+          </div>
+          <div
+            style={{
+              background: 'rgba(255,255,255,.12)',
+              border: '1px solid rgba(255,255,255,.18)',
+              borderRadius: 14,
+              padding: '16px 18px',
+              backdropFilter: 'blur(4px)',
+            }}
+          >
+            <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 22, fontWeight: 700 }}>+53%</div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,.75)', marginTop: 2 }}>Economia no mês</div>
+          </div>
+        </div>
       </div>
 
-      <div className="relative z-10 text-sm text-primary-foreground/70">
-        meu-bolso
+      <div style={{ position: 'relative', zIndex: 2, fontSize: 13, color: 'rgba(255,255,255,.7)' }}>
+        Projeto de portfólio · design & front-end
       </div>
 
-      <div className="pointer-events-none absolute -bottom-24 -right-24 size-80 rounded-full bg-white/10" />
-      <div className="pointer-events-none absolute -top-16 right-16 size-48 rounded-full bg-white/10" />
+      <div
+        style={{
+          position: 'absolute',
+          right: -90,
+          bottom: -90,
+          width: 340,
+          height: 340,
+          borderRadius: '50%',
+          background: 'rgba(255,255,255,.07)',
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          right: 60,
+          top: -70,
+          width: 200,
+          height: 200,
+          borderRadius: '50%',
+          background: 'rgba(255,255,255,.06)',
+        }}
+      />
     </div>
   );
 }
 
-function ModeTabs({
-  mode,
-  onChange,
-}: {
-  mode: Mode;
-  onChange: (mode: Mode) => void;
-}) {
+function ModeTabs({ mode, onChange }: { mode: Mode; onChange: (mode: Mode) => void }) {
   return (
-    <div className="mb-7 inline-flex rounded-xl border bg-muted p-1">
+    <div
+      style={{
+        display: 'inline-flex',
+        background: 'var(--surface-2)',
+        border: '1px solid var(--border)',
+        padding: 4,
+        borderRadius: 12,
+        marginBottom: 28,
+      }}
+    >
       <button
         type="button"
         data-testid="join-tab-login"
         onClick={() => onChange('login')}
-        className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
-          mode === 'login'
-            ? 'bg-background text-foreground shadow-sm'
-            : 'text-muted-foreground'
-        }`}
+        style={{
+          padding: '8px 16px',
+          borderRadius: 8,
+          border: 'none',
+          background: mode === 'login' ? 'var(--surface)' : 'transparent',
+          color: mode === 'login' ? 'var(--text)' : 'var(--text-dim)',
+          boxShadow: mode === 'login' ? 'var(--shadow)' : 'none',
+          fontSize: 14,
+          fontWeight: 600,
+          cursor: 'pointer',
+        }}
       >
         Entrar
       </button>
@@ -104,11 +207,17 @@ function ModeTabs({
         type="button"
         data-testid="join-tab-register"
         onClick={() => onChange('register')}
-        className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
-          mode === 'register'
-            ? 'bg-background text-foreground shadow-sm'
-            : 'text-muted-foreground'
-        }`}
+        style={{
+          padding: '8px 16px',
+          borderRadius: 8,
+          border: 'none',
+          background: mode === 'register' ? 'var(--surface)' : 'transparent',
+          color: mode === 'register' ? 'var(--text)' : 'var(--text-dim)',
+          boxShadow: mode === 'register' ? 'var(--shadow)' : 'none',
+          fontSize: 14,
+          fontWeight: 600,
+          cursor: 'pointer',
+        }}
       >
         Criar conta
       </button>
@@ -159,15 +268,17 @@ function RegisterForm() {
 
   return (
     <>
-      <h2 className="mb-1.5 text-2xl font-bold tracking-tight">Criar conta</h2>
-      <p className="mb-6 text-sm text-muted-foreground">
+      <h2 style={{ fontSize: 26, fontWeight: 700, letterSpacing: '-.02em', marginBottom: 6 }}>Criar conta</h2>
+      <p style={{ fontSize: 14, color: 'var(--text-dim)', marginBottom: 26 }}>
         Comece a organizar suas finanças em poucos minutos.
       </p>
 
-      <form onSubmit={handleSubmit} data-testid="join-form" className="flex flex-col gap-4">
-        <div>
-          <Label htmlFor="register-name">Nome completo</Label>
-          <Input
+      <form onSubmit={handleSubmit} data-testid="join-form">
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 7 }} htmlFor="register-name">
+            Nome completo
+          </label>
+          <input
             id="register-name"
             name="name"
             autoComplete="name"
@@ -175,12 +286,15 @@ function RegisterForm() {
             value={name}
             onChange={(event) => setName(event.target.value)}
             required
+            style={inputStyle}
           />
         </div>
 
-        <div>
-          <Label htmlFor="register-email">E-mail</Label>
-          <Input
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 7 }} htmlFor="register-email">
+            E-mail
+          </label>
+          <input
             id="register-email"
             name="email"
             type="email"
@@ -189,12 +303,18 @@ function RegisterForm() {
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             required
+            style={inputStyle}
           />
         </div>
 
-        <div>
-          <Label htmlFor="register-password">Senha</Label>
-          <Input
+        <div style={{ marginBottom: 6 }}>
+          <label
+            style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 7 }}
+            htmlFor="register-password"
+          >
+            Senha
+          </label>
+          <input
             id="register-password"
             name="password"
             type="password"
@@ -203,18 +323,30 @@ function RegisterForm() {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             required
+            style={inputStyle}
           />
         </div>
 
-        <Button
+        <button
           type="submit"
-          size="lg"
-          className="mt-2 w-full"
-          disabled={isSubmitting}
           data-testid="join-submit"
+          disabled={isSubmitting}
+          style={{
+            width: '100%',
+            marginTop: 20,
+            padding: 13,
+            borderRadius: 11,
+            border: 'none',
+            background: 'var(--primary)',
+            color: '#fff',
+            fontSize: 15,
+            fontWeight: 600,
+            cursor: 'pointer',
+            boxShadow: 'var(--shadow-md)',
+          }}
         >
           {isSubmitting ? 'Criando conta...' : 'Criar conta'}
-        </Button>
+        </button>
       </form>
     </>
   );
@@ -227,15 +359,14 @@ function LoginForm() {
   const { login } = useAuth();
   const router = useRouter();
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function performLogin(loginEmail: string, loginPassword: string) {
     setIsSubmitting(true);
 
     try {
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: loginEmail, password: loginPassword }),
       });
 
       if (response.status === 200) {
@@ -261,17 +392,28 @@ function LoginForm() {
     }
   }
 
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    performLogin(email, password);
+  }
+
+  function handleDemoLogin() {
+    setEmail(DEMO_EMAIL);
+    setPassword(DEMO_PASSWORD);
+    performLogin(DEMO_EMAIL, DEMO_PASSWORD);
+  }
+
   return (
     <>
-      <h2 className="mb-1.5 text-2xl font-bold tracking-tight">Entrar</h2>
-      <p className="mb-6 text-sm text-muted-foreground">
-        Acesse sua conta para continuar.
-      </p>
+      <h2 style={{ fontSize: 26, fontWeight: 700, letterSpacing: '-.02em', marginBottom: 6 }}>Entrar</h2>
+      <p style={{ fontSize: 14, color: 'var(--text-dim)', marginBottom: 26 }}>Acesse sua conta para continuar.</p>
 
-      <form onSubmit={handleSubmit} data-testid="login-form" className="flex flex-col gap-4">
-        <div>
-          <Label htmlFor="login-email">E-mail</Label>
-          <Input
+      <form onSubmit={handleSubmit} data-testid="login-form">
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 7 }} htmlFor="login-email">
+            E-mail
+          </label>
+          <input
             id="login-email"
             name="email"
             type="email"
@@ -279,12 +421,15 @@ function LoginForm() {
             data-testid="login-email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
+            style={inputStyle}
           />
         </div>
 
-        <div>
-          <Label htmlFor="login-password">Senha</Label>
-          <Input
+        <div style={{ marginBottom: 6 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 7 }} htmlFor="login-password">
+            Senha
+          </label>
+          <input
             id="login-password"
             name="password"
             type="password"
@@ -292,19 +437,70 @@ function LoginForm() {
             data-testid="login-password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
+            style={inputStyle}
           />
         </div>
 
-        <Button
+        <button
           type="submit"
-          size="lg"
-          className="mt-2 w-full"
-          disabled={isSubmitting}
           data-testid="login-submit"
+          disabled={isSubmitting}
+          style={{
+            width: '100%',
+            marginTop: 20,
+            padding: 13,
+            borderRadius: 11,
+            border: 'none',
+            background: 'var(--primary)',
+            color: '#fff',
+            fontSize: 15,
+            fontWeight: 600,
+            cursor: 'pointer',
+            boxShadow: 'var(--shadow-md)',
+          }}
         >
           {isSubmitting ? 'Entrando...' : 'Entrar'}
-        </Button>
+        </button>
       </form>
+
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          margin: '22px 0',
+          color: 'var(--text-faint)',
+          fontSize: 12,
+        }}
+      >
+        <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+        ou
+        <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+      </div>
+
+      <button
+        type="button"
+        onClick={handleDemoLogin}
+        disabled={isSubmitting}
+        style={{
+          width: '100%',
+          padding: 12,
+          borderRadius: 11,
+          border: '1px solid var(--border)',
+          background: 'var(--surface)',
+          color: 'var(--text)',
+          fontSize: 14,
+          fontWeight: 600,
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 9,
+        }}
+      >
+        <Icon name="demography" size={19} color="var(--text-dim)" />
+        Entrar com conta de demonstração
+      </button>
     </>
   );
 }

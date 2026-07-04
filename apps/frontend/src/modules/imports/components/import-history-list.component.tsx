@@ -1,7 +1,6 @@
 'use client';
 
-import { CheckCircle2, History, Loader2, XCircle } from 'lucide-react';
-import { cn } from '@/shared/lib/class-name.util';
+import { Icon } from '@/shared/components/ui/icon';
 import { formatDateBR } from '@/modules/transactions/util/format-currency.util';
 import { importStatusLabel, type ImportRecord } from '@/modules/imports/types/import.type';
 
@@ -10,20 +9,28 @@ type ImportHistoryListProps = {
   isLoading: boolean;
 };
 
-function statusStyles(status: ImportRecord['status']) {
+function statusVisual(status: ImportRecord['status']) {
   if (status === 'done') {
-    return { className: 'bg-emerald-500/10 text-emerald-500', Icon: CheckCircle2 };
+    return { color: 'var(--primary)', bg: 'var(--primary-soft)', icon: 'check_circle' };
   }
   if (status === 'failed') {
-    return { className: 'bg-rose-500/10 text-rose-500', Icon: XCircle };
+    return { color: '#dc2626', bg: 'rgba(220,38,38,.12)', icon: 'error' };
   }
-  return { className: 'bg-amber-500/10 text-amber-500', Icon: Loader2 };
+  return { color: '#d97706', bg: 'rgba(217,119,6,.12)', icon: 'sync' };
 }
 
 export function ImportHistoryList({ imports, isLoading }: ImportHistoryListProps) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-      <div className="border-b border-border px-5 py-4 text-sm font-bold">
+    <div
+      style={{
+        background: 'var(--surface)',
+        border: '1px solid var(--card-border)',
+        borderRadius: 16,
+        boxShadow: 'var(--shadow-card)',
+        overflow: 'hidden',
+      }}
+    >
+      <div style={{ padding: '18px 20px', borderBottom: '1px solid var(--border)', fontSize: 15, fontWeight: 700 }}>
         Histórico de importações
       </div>
 
@@ -32,50 +39,113 @@ export function ImportHistoryList({ imports, isLoading }: ImportHistoryListProps
           {Array.from({ length: 3 }).map((_, index) => (
             <div
               key={`import-history-skeleton-${index}`}
-              className="h-16 animate-pulse border-b border-border bg-muted/40 last:border-b-0"
+              style={{
+                height: 64,
+                borderBottom: '1px solid var(--border)',
+                background: 'var(--surface-2)',
+                animation: 'pulse 1.5s ease-in-out infinite',
+              }}
             />
           ))}
         </div>
       ) : imports.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
-          <span className="grid size-14 place-items-center rounded-2xl bg-primary/10">
-            <History className="size-7 text-primary" />
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 12,
+            padding: '48px 24px',
+            textAlign: 'center',
+          }}
+        >
+          <span
+            style={{
+              width: 56,
+              height: 56,
+              borderRadius: 16,
+              display: 'grid',
+              placeItems: 'center',
+              background: 'var(--primary-soft)',
+            }}
+          >
+            <Icon name="history" size={28} color="var(--primary)" />
           </span>
-          <div className="space-y-1">
-            <h3 className="text-sm font-bold">Nenhuma importação ainda</h3>
-            <p className="text-xs text-muted-foreground">
+          <div>
+            <h3 style={{ fontSize: 13.5, fontWeight: 700 }}>Nenhuma importação ainda</h3>
+            <p style={{ fontSize: 12, color: 'var(--text-dim)', marginTop: 2 }}>
               Suas importações anteriores aparecerão aqui.
             </p>
           </div>
         </div>
       ) : (
         imports.map((item) => {
-          const { className, Icon } = statusStyles(item.status);
+          const visual = statusVisual(item.status);
           const summary = `${item.totalRows} linhas · ${item.importedRows} importadas · ${item.duplicateRows} duplicadas`;
 
           return (
             <div
               key={item.id}
-              className="flex items-center gap-3.5 border-b border-border px-5 py-4 last:border-b-0 hover:bg-muted/40"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 13,
+                padding: '15px 20px',
+                borderBottom: '1px solid var(--border)',
+              }}
             >
-              <span className="grid size-10 shrink-0 place-items-center rounded-lg border border-border bg-muted/40 font-mono-money text-[11px] font-bold text-muted-foreground">
+              <span
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 10,
+                  background: 'var(--surface-2)',
+                  border: '1px solid var(--border)',
+                  display: 'grid',
+                  placeItems: 'center',
+                  flexShrink: 0,
+                  fontFamily: "'JetBrains Mono'",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: 'var(--text-dim)',
+                }}
+              >
                 {item.format.toUpperCase()}
               </span>
 
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-mono-money text-sm font-semibold">{item.fileName}</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: 13.5,
+                    fontWeight: 600,
+                    fontFamily: "'JetBrains Mono'",
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {item.fileName}
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 3 }}>
                   {formatDateBR(item.createdAt)} · {summary}
-                </p>
+                </div>
               </div>
 
               <span
-                className={cn(
-                  'inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11.5px] font-semibold',
-                  className,
-                )}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 5,
+                  fontSize: 11.5,
+                  fontWeight: 600,
+                  padding: '4px 10px',
+                  borderRadius: 20,
+                  color: visual.color,
+                  background: visual.bg,
+                  flexShrink: 0,
+                }}
               >
-                <Icon className={cn('size-3.5', item.status === 'processing' && 'animate-spin')} />
+                <Icon name={visual.icon} size={14} />
                 {importStatusLabel(item.status)}
               </span>
             </div>

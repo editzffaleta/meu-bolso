@@ -2,10 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { CalendarDays, Plus, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
-import { Button } from '@/shared/components/ui/button';
 import { getMessage } from '@/shared/i18n';
+import { Icon } from '@/shared/components/ui/icon';
 import { useAuth } from '@/modules/auth/context/auth.context';
 import { listCategories } from '@/modules/categories/util/categories-api.util';
 import type { Category } from '@/modules/categories/types/category.type';
@@ -94,26 +93,31 @@ export default function DashboardComponent() {
   const showGeneralEmptyState = !isLoading && hasAnyTransactionEver === false;
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-[19px] font-bold tracking-tight text-foreground">Dashboard</h2>
-          <p className="mt-0.5 text-[12.5px] text-muted-foreground">
-            Acompanhe saldo, receitas, despesas e para onde seu dinheiro está indo
-          </p>
-        </div>
-
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+        <div />
         <label
           htmlFor="dashboard-month"
-          className="flex items-center gap-2 rounded-[10px] border border-border bg-muted px-3 py-2 text-sm font-semibold text-foreground"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            background: 'var(--surface-2)',
+            border: '1px solid var(--border)',
+            borderRadius: 10,
+            padding: '8px 12px',
+            cursor: 'pointer',
+            fontSize: 13,
+            fontWeight: 600,
+          }}
         >
-          <CalendarDays className="size-[18px] text-muted-foreground" />
+          <Icon name="calendar_month" size={18} color="var(--text-dim)" />
           <input
             id="dashboard-month"
             type="month"
             value={month}
             onChange={(event) => setMonth(event.target.value || currentMonth())}
-            className="bg-transparent outline-none"
+            style={{ background: 'transparent', border: 'none', outline: 'none', color: 'var(--text)' }}
           />
         </label>
       </div>
@@ -124,13 +128,9 @@ export default function DashboardComponent() {
         <>
           <DashboardKpiCards summary={summary} isLoading={isLoading} />
 
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
-            <div className="lg:col-span-3">
-              <DashboardEvolutionBarCard items={monthlyEvolution} isLoading={isLoading} />
-            </div>
-            <div className="lg:col-span-2">
-              <DashboardSpendingPieCard items={spendingByCategory} isLoading={isLoading} />
-            </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 16 }}>
+            <DashboardEvolutionBarCard items={monthlyEvolution} isLoading={isLoading} />
+            <DashboardSpendingPieCard items={spendingByCategory} isLoading={isLoading} />
           </div>
 
           <DashboardRecentTransactionsCard
@@ -146,22 +146,58 @@ export default function DashboardComponent() {
 
 function GeneralEmptyState() {
   return (
-    <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-border bg-card py-20 text-center shadow-[var(--shadow-card)]">
-      <span className="grid size-16 place-items-center rounded-2xl bg-primary-soft">
-        <Sparkles className="size-8 text-primary" />
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 16,
+        borderRadius: 16,
+        border: '1px dashed var(--border)',
+        background: 'var(--surface)',
+        padding: '80px 20px',
+        textAlign: 'center',
+        boxShadow: 'var(--shadow-card)',
+      }}
+    >
+      <span
+        style={{
+          display: 'grid',
+          placeItems: 'center',
+          width: 64,
+          height: 64,
+          borderRadius: 16,
+          background: 'var(--primary-soft)',
+        }}
+      >
+        <Icon name="auto_awesome" size={32} color="var(--primary)" />
       </span>
-      <div className="space-y-1">
-        <h3 className="text-lg font-bold text-foreground">Comece registrando sua primeira transação</h3>
-        <p className="mx-auto max-w-sm text-sm text-muted-foreground">
+      <div>
+        <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>Comece registrando sua primeira transação</h3>
+        <p style={{ maxWidth: 380, margin: '0 auto', fontSize: 14, color: 'var(--text-dim)' }}>
           Assim que você lançar receitas e despesas, seus gráficos e indicadores aparecem aqui automaticamente.
         </p>
       </div>
-      <Button asChild>
-        <Link href="/transacoes">
-          <Plus className="size-4" />
-          Nova transação
-        </Link>
-      </Button>
+      <Link
+        href="/transacoes"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 7,
+          background: 'var(--primary)',
+          border: 'none',
+          borderRadius: 10,
+          padding: '10px 16px',
+          fontSize: 13.5,
+          fontWeight: 600,
+          color: '#fff',
+          textDecoration: 'none',
+          boxShadow: 'var(--shadow-md)',
+        }}
+      >
+        <Icon name="add" size={18} />
+        Nova transação
+      </Link>
     </div>
   );
 }

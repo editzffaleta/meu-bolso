@@ -1,7 +1,6 @@
 'use client';
 
-import { Pencil, Trash2 } from 'lucide-react';
-import { LucideIconByKey } from '@/shared/components/ui/lucide-icon-by-key';
+import { Icon } from '@/shared/components/ui/icon';
 import { categoryTypeLabel, type Category } from '@/modules/categories/types/category.type';
 
 type CategoryListItemProps = {
@@ -25,29 +24,50 @@ function hexToSoftBackground(hex: string): string {
 
 export function CategoryListItem({ category, onEdit, onDelete }: CategoryListItemProps) {
   const isIncome = category.type === 'income';
+  const typeColor = isIncome ? '#059669' : '#dc2626';
+  const typeBg = isIncome ? 'rgba(5,150,105,.12)' : 'rgba(220,38,38,.12)';
 
   return (
-    <div className="flex items-center gap-3 border-b border-border px-5 py-3 last:border-b-0 transition-colors hover:bg-muted/40">
+    <div
+      data-testid="categories-list-row"
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 13,
+        padding: '13px 20px',
+        borderBottom: '1px solid var(--border)',
+      }}
+    >
       <span
-        className="grid size-9 shrink-0 place-items-center rounded-xl"
-        style={{ backgroundColor: hexToSoftBackground(category.color) }}
+        style={{
+          width: 38,
+          height: 38,
+          borderRadius: 11,
+          display: 'grid',
+          placeItems: 'center',
+          flexShrink: 0,
+          background: hexToSoftBackground(category.color),
+        }}
       >
-        <LucideIconByKey name={category.icon} size={20} iconColor={category.color} />
+        <Icon name={category.icon ?? 'category'} size={20} color={category.color} />
       </span>
 
-      <div className="min-w-0 flex-1">
-        <div className="text-sm font-semibold">{category.name}</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 14, fontWeight: 600 }}>{category.name}</div>
         {category.isDefault ? (
-          <div className="mt-0.5 text-xs text-muted-foreground">Categoria padrão</div>
+          <div style={{ fontSize: 12, color: 'var(--text-faint)', marginTop: 1 }}>Categoria padrão</div>
         ) : null}
       </div>
 
       <span
-        className={`rounded-full px-2.5 py-1 text-[11.5px] font-semibold ${
-          isIncome
-            ? 'bg-emerald-500/10 text-emerald-500'
-            : 'bg-rose-500/10 text-rose-500'
-        }`}
+        style={{
+          fontSize: 11.5,
+          fontWeight: 600,
+          padding: '3px 10px',
+          borderRadius: 20,
+          color: typeColor,
+          background: typeBg,
+        }}
       >
         {categoryTypeLabel(category.type)}
       </span>
@@ -55,18 +75,38 @@ export function CategoryListItem({ category, onEdit, onDelete }: CategoryListIte
       <button
         type="button"
         onClick={() => onEdit(category)}
-        className="grid size-8 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground transition-colors hover:text-primary"
         aria-label={`Editar ${category.name}`}
+        style={{
+          width: 30,
+          height: 30,
+          borderRadius: 8,
+          border: 'none',
+          background: 'none',
+          color: 'var(--text-faint)',
+          cursor: 'pointer',
+          display: 'grid',
+          placeItems: 'center',
+        }}
       >
-        <Pencil className="size-4" />
+        <Icon name="edit" size={17} />
       </button>
       <button
         type="button"
         onClick={() => onDelete(category)}
-        className="grid size-8 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground transition-colors hover:text-destructive"
         aria-label={`Excluir ${category.name}`}
+        style={{
+          width: 30,
+          height: 30,
+          borderRadius: 8,
+          border: 'none',
+          background: 'none',
+          color: 'var(--text-faint)',
+          cursor: 'pointer',
+          display: 'grid',
+          placeItems: 'center',
+        }}
       >
-        <Trash2 className="size-4" />
+        <Icon name="delete" size={17} />
       </button>
     </div>
   );

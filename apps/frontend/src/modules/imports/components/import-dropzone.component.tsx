@@ -1,8 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
-import { CloudUpload, Loader2 } from 'lucide-react';
-import { cn } from '@/shared/lib/class-name.util';
+import { Icon } from '@/shared/components/ui/icon';
 import { ACCEPTED_IMPORT_EXTENSIONS, hasAcceptedImportExtension } from '@/modules/imports/types/import.type';
 
 type ImportDropzoneProps = {
@@ -38,14 +37,32 @@ export function ImportDropzone({
   if (isProcessing) {
     return (
       <div
-        className="rounded-2xl border border-border bg-muted/40 px-6 py-9 text-center"
         aria-busy="true"
         data-testid="import-dropzone"
+        style={{
+          border: '1px solid var(--border)',
+          borderRadius: 14,
+          padding: '34px 20px',
+          textAlign: 'center',
+          background: 'var(--surface-2)',
+        }}
       >
-        <Loader2 className="mx-auto mb-4 size-9 animate-spin text-primary" />
-        <p className="mb-1 text-sm font-bold">Processando extrato…</p>
+        <div
+          style={{
+            width: 44,
+            height: 44,
+            border: '4px solid var(--primary-line)',
+            borderTopColor: 'var(--primary)',
+            borderRadius: '50%',
+            animation: 'spin .8s linear infinite',
+            margin: '0 auto 16px',
+          }}
+        />
+        <div style={{ fontSize: 14.5, fontWeight: 700, marginBottom: 4 }}>Processando extrato…</div>
         {processingFileName ? (
-          <p className="font-mono-money text-xs text-muted-foreground">{processingFileName}</p>
+          <div style={{ fontSize: 12.5, color: 'var(--text-dim)', fontFamily: "'JetBrains Mono'" }}>
+            {processingFileName}
+          </div>
         ) : null}
       </div>
     );
@@ -55,6 +72,7 @@ export function ImportDropzone({
     <div
       role="button"
       tabIndex={0}
+      data-testid="import-dropzone"
       onClick={() => inputRef.current?.click()}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
@@ -71,24 +89,38 @@ export function ImportDropzone({
         setIsDragOver(false);
         handleFile(event.dataTransfer.files?.[0]);
       }}
-      className={cn(
-        'cursor-pointer rounded-2xl border-2 border-dashed border-border bg-muted/40 px-6 py-9 text-center transition-colors',
-        isDragOver && 'border-primary bg-primary/5',
-      )}
-      data-testid="import-dropzone"
+      style={{
+        border: `2px dashed ${isDragOver ? 'var(--primary)' : 'var(--border)'}`,
+        borderRadius: 14,
+        padding: '38px 20px',
+        textAlign: 'center',
+        cursor: 'pointer',
+        background: isDragOver ? 'var(--primary-soft)' : 'var(--surface-2)',
+      }}
     >
-      <span className="mx-auto mb-3.5 grid size-15 place-items-center rounded-2xl border border-border bg-card">
-        <CloudUpload className="size-7.5 text-primary" />
-      </span>
-      <p className="mb-1 text-sm font-bold">Arraste o arquivo aqui</p>
-      <p className="text-xs text-muted-foreground">
+      <div
+        style={{
+          width: 60,
+          height: 60,
+          borderRadius: 16,
+          background: 'var(--surface)',
+          border: '1px solid var(--border)',
+          display: 'grid',
+          placeItems: 'center',
+          margin: '0 auto 14px',
+        }}
+      >
+        <Icon name="cloud_upload" size={30} color="var(--primary)" />
+      </div>
+      <div style={{ fontSize: 14.5, fontWeight: 700, marginBottom: 4 }}>Arraste o arquivo aqui</div>
+      <div style={{ fontSize: 12.5, color: 'var(--text-dim)' }}>
         ou clique para selecionar · CSV, OFX até 2 MB
-      </p>
+      </div>
       <input
         ref={inputRef}
         type="file"
         accept={ACCEPTED_IMPORT_EXTENSIONS.join(',')}
-        className="hidden"
+        style={{ display: 'none' }}
         data-testid="import-submit"
         onChange={(event) => {
           handleFile(event.target.files?.[0]);

@@ -35,8 +35,20 @@ export function TransactionFiltersBar({
     filters.from || filters.to || filters.accountId || filters.categoryId || filters.type;
 
   return (
-    <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm">
-      <div className="min-w-[150px]">
+    <div
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'flex-end',
+        gap: 12,
+        background: 'var(--surface)',
+        border: '1px solid var(--card-border)',
+        borderRadius: 16,
+        padding: 16,
+        boxShadow: 'var(--shadow-card)',
+      }}
+    >
+      <div style={{ minWidth: 150 }}>
         <Label htmlFor="filter-from">De</Label>
         <DatePickerInput
           id="filter-from"
@@ -46,7 +58,7 @@ export function TransactionFiltersBar({
         />
       </div>
 
-      <div className="min-w-[150px]">
+      <div style={{ minWidth: 150 }}>
         <Label htmlFor="filter-to">Até</Label>
         <DatePickerInput
           id="filter-to"
@@ -56,7 +68,7 @@ export function TransactionFiltersBar({
         />
       </div>
 
-      <div className="min-w-[180px]">
+      <div style={{ minWidth: 180 }}>
         <Label htmlFor="filter-account">Conta</Label>
         <Combobox
           options={accountOptions}
@@ -67,7 +79,7 @@ export function TransactionFiltersBar({
         />
       </div>
 
-      <div className="min-w-[180px]">
+      <div style={{ minWidth: 180 }}>
         <Label htmlFor="filter-category">Categoria</Label>
         <Combobox
           options={categoryOptions}
@@ -78,7 +90,7 @@ export function TransactionFiltersBar({
         />
       </div>
 
-      <div className="min-w-[150px]">
+      <div style={{ minWidth: 150 }}>
         <Label htmlFor="filter-type">Tipo</Label>
         <Combobox
           options={typeOptions}

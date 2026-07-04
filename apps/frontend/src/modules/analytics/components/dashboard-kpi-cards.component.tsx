@@ -1,6 +1,4 @@
-import type { ReactNode } from 'react';
-import { ArrowDownCircle, ArrowUpCircle, ListChecks, Wallet } from 'lucide-react';
-import { cn } from '@/shared/lib/class-name.util';
+import { Icon } from '@/shared/components/ui/icon';
 import { formatCurrencyBRL } from '@/modules/transactions/util/format-currency.util';
 import type { SummaryOut } from '@/modules/analytics/types/analytics.type';
 
@@ -11,31 +9,50 @@ type DashboardKpiCardsProps = {
 
 type KpiCardProps = {
   label: string;
-  value: ReactNode;
-  icon: ReactNode;
-  iconBgClassName: string;
-  iconColorClassName: string;
-  valueColorClassName?: string;
-  'data-testid'?: string;
+  value: string;
+  icon: string;
+  iconBg: string;
+  iconColor: string;
+  valueColor: string;
+  dataTestId?: string;
 };
 
-function KpiCard({ label, value, icon, iconBgClassName, iconColorClassName, valueColorClassName, 'data-testid': dataTestId }: KpiCardProps) {
+function KpiCard({ label, value, icon, iconBg, iconColor, valueColor, dataTestId }: KpiCardProps) {
   return (
     <div
       data-testid={dataTestId}
-      className="rounded-2xl border border-border bg-card px-5 py-[18px] shadow-[var(--shadow-card)]"
+      style={{
+        background: 'var(--surface)',
+        border: '1px solid var(--card-border)',
+        borderRadius: 16,
+        padding: '18px 20px',
+        boxShadow: 'var(--shadow-card)',
+      }}
     >
-      <div className="flex items-center justify-between">
-        <span className="text-[13px] font-medium text-muted-foreground">{label}</span>
-        <span className={cn('grid size-[34px] shrink-0 place-items-center rounded-[10px]', iconBgClassName)}>
-          <span className={cn('[&_svg]:size-[19px]', iconColorClassName)}>{icon}</span>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontSize: 13, color: 'var(--text-dim)', fontWeight: 500 }}>{label}</span>
+        <span
+          style={{
+            width: 34,
+            height: 34,
+            borderRadius: 10,
+            display: 'grid',
+            placeItems: 'center',
+            background: iconBg,
+          }}
+        >
+          <Icon name={icon} size={19} color={iconColor} />
         </span>
       </div>
       <div
-        className={cn(
-          'font-mono-money mt-3 text-2xl font-bold tracking-tight text-foreground',
-          valueColorClassName,
-        )}
+        style={{
+          fontFamily: "'JetBrains Mono'",
+          fontSize: 25,
+          fontWeight: 700,
+          marginTop: 12,
+          letterSpacing: '-.02em',
+          color: valueColor,
+        }}
       >
         {value}
       </div>
@@ -46,11 +63,17 @@ function KpiCard({ label, value, icon, iconBgClassName, iconColorClassName, valu
 export function DashboardKpiCards({ summary, isLoading }: DashboardKpiCardsProps) {
   if (isLoading || !summary) {
     return (
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-busy="true">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }} aria-busy="true">
         {Array.from({ length: 4 }).map((_, index) => (
           <div
             key={`kpi-skeleton-${index}`}
-            className="h-32 animate-pulse rounded-2xl border border-border bg-card"
+            style={{
+              height: 128,
+              borderRadius: 16,
+              border: '1px solid var(--border)',
+              background: 'var(--surface)',
+              animation: 'pulse 1.5s ease-in-out infinite',
+            }}
           />
         ))}
       </div>
@@ -60,41 +83,42 @@ export function DashboardKpiCards({ summary, isLoading }: DashboardKpiCardsProps
   const isBalancePositive = summary.balance >= 0;
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
       <KpiCard
         label="Saldo"
         value={formatCurrencyBRL(summary.balance)}
-        icon={<Wallet />}
-        iconBgClassName={isBalancePositive ? 'bg-primary-soft' : 'bg-destructive/10'}
-        iconColorClassName={isBalancePositive ? 'text-primary' : 'text-destructive'}
-        valueColorClassName={isBalancePositive ? 'text-primary' : 'text-destructive'}
-        data-testid="dashboard-kpi-balance"
+        icon="account_balance_wallet"
+        iconBg={isBalancePositive ? 'var(--primary-soft)' : 'rgba(220,38,38,.12)'}
+        iconColor={isBalancePositive ? 'var(--primary)' : '#dc2626'}
+        valueColor={isBalancePositive ? 'var(--text)' : '#dc2626'}
+        dataTestId="dashboard-kpi-balance"
       />
 
       <KpiCard
         label="Receitas"
         value={formatCurrencyBRL(summary.totalIncome)}
-        icon={<ArrowUpCircle />}
-        iconBgClassName="bg-primary-soft"
-        iconColorClassName="text-primary"
-        valueColorClassName="text-primary"
+        icon="trending_up"
+        iconBg="var(--primary-soft)"
+        iconColor="var(--primary)"
+        valueColor="var(--primary)"
       />
 
       <KpiCard
         label="Despesas"
         value={formatCurrencyBRL(summary.totalExpense)}
-        icon={<ArrowDownCircle />}
-        iconBgClassName="bg-destructive/10"
-        iconColorClassName="text-destructive"
-        valueColorClassName="text-destructive"
+        icon="trending_down"
+        iconBg="rgba(220,38,38,.12)"
+        iconColor="#dc2626"
+        valueColor="#dc2626"
       />
 
       <KpiCard
         label="Transações"
-        value={summary.transactionCount}
-        icon={<ListChecks />}
-        iconBgClassName="bg-muted"
-        iconColorClassName="text-muted-foreground"
+        value={String(summary.transactionCount)}
+        icon="receipt_long"
+        iconBg="var(--surface-2)"
+        iconColor="var(--text-dim)"
+        valueColor="var(--text)"
       />
     </div>
   );

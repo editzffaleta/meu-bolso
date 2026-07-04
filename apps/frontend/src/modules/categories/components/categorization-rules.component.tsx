@@ -1,9 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Loader2, Plus, Zap } from 'lucide-react';
 import { toast } from 'sonner';
-import { Button } from '@/shared/components/ui/button';
+import { Icon } from '@/shared/components/ui/icon';
 import { DeleteConfirmationDialog } from '@/shared/components/ui/delete-confirmation-dialog';
 import { getMessage } from '@/shared/i18n';
 import { useAuth } from '@/modules/auth/context/auth.context';
@@ -118,9 +117,7 @@ export function CategorizationRulesComponent({ categories }: CategorizationRules
     setIsRecategorizing(true);
     try {
       const result = await recategorizeTransactions(token);
-      toast.success(
-        `${result.categorized} de ${result.evaluated} transações foram categorizadas.`,
-      );
+      toast.success(`${result.categorized} de ${result.evaluated} transações foram categorizadas.`);
     } catch (error) {
       reportApiErrors(error);
     } finally {
@@ -133,24 +130,48 @@ export function CategorizationRulesComponent({ categories }: CategorizationRules
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-      <div className="border-b border-border px-5 py-4">
-        <div className="flex items-center justify-between">
-          <div className="text-[15px] font-bold">Regras de categorização automática</div>
-          <Button size="sm" variant="secondary" onClick={handleOpenCreate}>
-            <Plus className="size-4" />
+    <div
+      style={{
+        background: 'var(--surface)',
+        border: '1px solid var(--card-border)',
+        borderRadius: 16,
+        boxShadow: 'var(--shadow-card)',
+        overflow: 'hidden',
+      }}
+    >
+      <div style={{ padding: '18px 20px', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ fontSize: 15, fontWeight: 700 }}>Regras de categorização automática</div>
+          <button
+            type="button"
+            onClick={handleOpenCreate}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              background: 'var(--primary-soft)',
+              border: '1px solid var(--primary-line)',
+              borderRadius: 9,
+              padding: '7px 12px',
+              fontSize: 13,
+              fontWeight: 600,
+              color: 'var(--primary)',
+              cursor: 'pointer',
+            }}
+          >
+            <Icon name="add" size={17} />
             Nova regra
-          </Button>
+          </button>
         </div>
-        <p className="mt-1.5 text-[12.5px] text-muted-foreground">
+        <div style={{ fontSize: 12.5, color: 'var(--text-dim)', marginTop: 6 }}>
           Transações cuja descrição contém a palavra-chave são categorizadas automaticamente.
-        </p>
+        </div>
       </div>
 
       {isLoading ? (
         <RulesSkeleton />
       ) : rules.length === 0 ? (
-        <div className="px-5 py-10 text-center text-sm text-muted-foreground">
+        <div style={{ padding: '40px 20px', textAlign: 'center', fontSize: 14, color: 'var(--text-dim)' }}>
           Nenhuma regra cadastrada.
         </div>
       ) : (
@@ -166,17 +187,43 @@ export function CategorizationRulesComponent({ categories }: CategorizationRules
         </div>
       )}
 
-      <div className="p-4">
-        <Button
+      <div style={{ padding: '16px 20px' }}>
+        <button
           type="button"
-          variant="outline"
-          className="w-full"
           onClick={handleRecategorize}
           disabled={isRecategorizing}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 9,
+            padding: 12,
+            borderRadius: 11,
+            border: '1px solid var(--primary)',
+            background: 'var(--surface)',
+            color: 'var(--primary)',
+            fontSize: 14,
+            fontWeight: 600,
+            cursor: isRecategorizing ? 'default' : 'pointer',
+          }}
         >
-          {isRecategorizing ? <Loader2 className="size-4 animate-spin" /> : <Zap className="size-4" />}
+          {isRecategorizing ? (
+            <span
+              style={{
+                width: 16,
+                height: 16,
+                border: '2px solid var(--primary-line)',
+                borderTopColor: 'var(--primary)',
+                borderRadius: '50%',
+                animation: 'spin .7s linear infinite',
+              }}
+            />
+          ) : (
+            <Icon name="bolt" size={19} />
+          )}
           {isRecategorizing ? 'Recategorizando...' : 'Recategorizar transações agora'}
-        </Button>
+        </button>
       </div>
 
       <CategorizationRuleFormDialog
@@ -209,7 +256,12 @@ function RulesSkeleton() {
       {Array.from({ length: 4 }).map((_, index) => (
         <div
           key={`rule-skeleton-${index}`}
-          className="h-14 animate-pulse border-b border-border bg-muted/40 last:border-b-0"
+          style={{
+            height: 56,
+            borderBottom: '1px solid var(--border)',
+            background: 'var(--surface-2)',
+            animation: 'pulse 1.5s ease-in-out infinite',
+          }}
         />
       ))}
     </div>
