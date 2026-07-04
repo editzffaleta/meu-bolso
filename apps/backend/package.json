@@ -27,7 +27,8 @@
     "prisma:migrate:deploy": "npx prisma migrate deploy",
     "prisma:seed": "npx prisma db seed",
     "prisma:studio": "npx prisma studio",
-    "seed:demo": "tsx prisma/seed/demo.ts"
+    "seed:demo": "tsx prisma/seed/demo.ts",
+    "fingerprints:recalc": "tsx prisma/scripts/recalc-import-fingerprints.ts"
   },
   "dependencies": {
     "@meubolso/accounts": "*",
