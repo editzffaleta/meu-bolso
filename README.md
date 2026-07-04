@@ -1,10 +1,22 @@
 # meu-bolso 💰
 
+[![CI](https://github.com/editzffaleta/meu-bolso/actions/workflows/ci.yml/badge.svg)](https://github.com/editzffaleta/meu-bolso/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+
 Dashboard de **finanças pessoais** full-stack: importe extratos bancários em **CSV/OFX**, tenha os
 gastos **categorizados automaticamente** e acompanhe para onde o dinheiro vai em **gráficos mensais**.
 
 > Projeto pessoal — construído para praticar arquitetura full-stack limpa de ponta a ponta
 > (domínio → API → UI), com testes e CI.
+
+## 📸 Telas
+
+![Dashboard do meu-bolso](screenshots/dashboard.png)
+
+<p align="center">
+  <img src="screenshots/transacoes.png" width="49%" alt="Transações com filtros" />
+  <img src="screenshots/orcamentos.png" width="49%" alt="Orçamentos com barras de progresso" />
+</p>
 
 ## ✨ Funcionalidades
 
