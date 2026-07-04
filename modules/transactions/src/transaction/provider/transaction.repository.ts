@@ -66,4 +66,58 @@ export interface TransactionRepository {
    * recategorizacao em massa - 009 - com `includeAlreadyCategorized=true`).
    */
   findAllByUser(userId: string): Promise<Transaction[]>;
+
+  /**
+   * Soma, escopado ao usuario, o total de receitas (`type=income`) e
+   * despesas (`type=expense`) e a contagem de transacoes cuja `date` esteja
+   * entre `from` e `to` (inclusive). Usado pelo dashboard (`011`) para o
+   * card de resumo do periodo.
+   */
+  sumByType(
+    userId: string,
+    from: Date,
+    to: Date,
+  ): Promise<TransactionTypeSummary>;
+
+  /**
+   * Soma, escopado ao usuario, o total de despesas (`type=expense`) por
+   * `categoryId` cuja `date` esteja entre `from` e `to` (inclusive).
+   * Transacoes sem `categoryId` sao agrupadas com `categoryId=null`. Usado
+   * pelo dashboard (`011`) para o grafico de pizza por categoria.
+   */
+  sumByCategory(
+    userId: string,
+    from: Date,
+    to: Date,
+  ): Promise<CategorySpendingSummary[]>;
+
+  /**
+   * Soma, escopado ao usuario, o total de receitas e despesas por mes
+   * (`YYYY-MM`) cuja `date` esteja entre `from` e `to` (inclusive). Usado
+   * pelo dashboard (`011`) para o grafico de evolucao mensal. Meses sem
+   * nenhuma transacao nao aparecem no resultado (o chamador preenche os
+   * meses ausentes com zero).
+   */
+  sumByMonth(
+    userId: string,
+    from: Date,
+    to: Date,
+  ): Promise<MonthlyTransactionSummary[]>;
+}
+
+export interface TransactionTypeSummary {
+  income: number;
+  expense: number;
+  count: number;
+}
+
+export interface CategorySpendingSummary {
+  categoryId: string | null;
+  total: number;
+}
+
+export interface MonthlyTransactionSummary {
+  month: string;
+  income: number;
+  expense: number;
 }

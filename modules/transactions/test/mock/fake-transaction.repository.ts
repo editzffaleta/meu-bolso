@@ -1,8 +1,11 @@
 import {
+  CategorySpendingSummary,
+  MonthlyTransactionSummary,
   Transaction,
   TransactionFilters,
   TransactionListResult,
   TransactionRepository,
+  TransactionTypeSummary,
 } from "../../src";
 
 export class FakeTransactionRepository implements TransactionRepository {
@@ -112,4 +115,88 @@ export class FakeTransactionRepository implements TransactionRepository {
       (transaction) => transaction.userId === userId,
     );
   }
+
+  async sumByType(
+    userId: string,
+    from: Date,
+    to: Date,
+  ): Promise<TransactionTypeSummary> {
+    const scoped = this.inRange(userId, from, to);
+
+    return scoped.reduce<TransactionTypeSummary>(
+      (acc, transaction) => {
+        if (transaction.type === "income") {
+          acc.income += transaction.amount;
+        } else {
+          acc.expense += transaction.amount;
+        }
+        acc.count += 1;
+        return acc;
+      },
+      { income: 0, expense: 0, count: 0 },
+    );
+  }
+
+  async sumByCategory(
+    userId: string,
+    from: Date,
+    to: Date,
+  ): Promise<CategorySpendingSummary[]> {
+    const scoped = this.inRange(userId, from, to).filter(
+      (transaction) => transaction.type === "expense",
+    );
+
+    const totals = new Map<string | null, number>();
+
+    for (const transaction of scoped) {
+      const key = transaction.categoryId ?? null;
+      totals.set(key, (totals.get(key) ?? 0) + transaction.amount);
+    }
+
+    return Array.from(totals.entries()).map(([categoryId, total]) => ({
+      categoryId,
+      total,
+    }));
+  }
+
+  async sumByMonth(
+    userId: string,
+    from: Date,
+    to: Date,
+  ): Promise<MonthlyTransactionSummary[]> {
+    const scoped = this.inRange(userId, from, to);
+
+    const totals = new Map<string, MonthlyTransactionSummary>();
+
+    for (const transaction of scoped) {
+      const month = toMonthKey(transaction.date);
+      const current = totals.get(month) ?? { month, income: 0, expense: 0 };
+
+      if (transaction.type === "income") {
+        current.income += transaction.amount;
+      } else {
+        current.expense += transaction.amount;
+      }
+
+      totals.set(month, current);
+    }
+
+    return Array.from(totals.values());
+  }
+
+  private inRange(userId: string, from: Date, to: Date): Transaction[] {
+    return this.transactions.filter(
+      (transaction) =>
+        transaction.userId === userId &&
+        transaction.date >= from &&
+        transaction.date <= to,
+    );
+  }
+}
+
+function toMonthKey(date: Date): string {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+
+  return `${year}-${month}`;
 }

@@ -1,0 +1,45 @@
+### Analytics - validado manualmente em 2026-07-04 com dados semeados (ver evidencia da task 011)
+### Pre-requisito: rodar auth/register + auth/login para obter {{token}}, criar 1 conta e 2
+### categorias de despesa, e lancar transacoes em 2026-06 e 2026-07 (ver script de seed na
+### evidencia). Substituir {{token}} pelo token retornado por /auth/login.
+
+@baseUrl = http://localhost:4000
+@token = COLE_AQUI_O_TOKEN
+
+### Summary do mes atual (default, sem query) - 200
+GET {{baseUrl}}/analytics/summary
+Authorization: Bearer {{token}}
+
+### Summary de um mes especifico com dados - 200
+# Esperado (com o seed da evidencia): totalIncome=5000, totalExpense=450, balance=4550, transactionCount=4
+GET {{baseUrl}}/analytics/summary?month=2026-07
+Authorization: Bearer {{token}}
+
+### Summary de um mes sem nenhuma transacao - 200 zerado
+GET {{baseUrl}}/analytics/summary?month=2020-01
+Authorization: Bearer {{token}}
+
+### Spending by category do mes com dados - 200, ordenado por total decrescente
+# Esperado: Alimentacao (300), Transporte (100), Sem categoria (50)
+GET {{baseUrl}}/analytics/spending-by-category?month=2026-07
+Authorization: Bearer {{token}}
+
+### Monthly evolution (3 meses) - 200, meses sem historico zerados
+# Esperado: 2026-05 zerado, 2026-06 (income=4000, expense=200), 2026-07 (income=5000, expense=450)
+GET {{baseUrl}}/analytics/monthly-evolution?months=3
+Authorization: Bearer {{token}}
+
+### Monthly evolution com default (6 meses, sem query) - 200
+GET {{baseUrl}}/analytics/monthly-evolution
+Authorization: Bearer {{token}}
+
+### Parametro month invalido - 422
+GET {{baseUrl}}/analytics/summary?month=2026-13
+Authorization: Bearer {{token}}
+
+### Parametro months invalido (nao numerico) - 422
+GET {{baseUrl}}/analytics/monthly-evolution?months=abc
+Authorization: Bearer {{token}}
+
+### Sem token - 401
+GET {{baseUrl}}/analytics/summary

@@ -1,5 +1,5 @@
-import { EmptyDashboard } from '@/shared/components/ui/empty-dashboard';
+import DashboardPage from '@/modules/analytics/pages/dashboard.page';
 
-export default function DashboardPage() {
-  return <EmptyDashboard />;
+export default function DashboardRoutePage() {
+  return <DashboardPage />;
 }

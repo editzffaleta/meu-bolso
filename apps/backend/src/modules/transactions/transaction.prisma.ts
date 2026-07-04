@@ -1,12 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import {
+  CategorySpendingSummary,
+  MonthlyTransactionSummary,
   Transaction,
   TransactionFilters,
   TransactionListResult,
   TransactionRepository,
   TransactionSource,
   TransactionType,
+  TransactionTypeSummary,
 } from '@meubolso/transactions';
 import { PrismaService } from '../../db/prisma.service';
 
@@ -143,6 +146,81 @@ export class PrismaTransactionRepository implements TransactionRepository {
     return found.map((item) => this.toDomain(item));
   }
 
+  async sumByType(
+    userId: string,
+    from: Date,
+    to: Date,
+  ): Promise<TransactionTypeSummary> {
+    const grouped = await this.prisma.transaction.groupBy({
+      by: ['type'],
+      where: { userId, date: { gte: from, lte: to } },
+      _sum: { amount: true },
+      _count: { _all: true },
+    });
+
+    const summary: TransactionTypeSummary = { income: 0, expense: 0, count: 0 };
+
+    for (const group of grouped) {
+      const total = Number(group._sum.amount ?? 0);
+
+      if (group.type === 'income') {
+        summary.income += total;
+      } else {
+        summary.expense += total;
+      }
+
+      summary.count += group._count._all;
+    }
+
+    return summary;
+  }
+
+  async sumByCategory(
+    userId: string,
+    from: Date,
+    to: Date,
+  ): Promise<CategorySpendingSummary[]> {
+    const grouped = await this.prisma.transaction.groupBy({
+      by: ['categoryId'],
+      where: { userId, type: 'expense', date: { gte: from, lte: to } },
+      _sum: { amount: true },
+    });
+
+    return grouped.map((group) => ({
+      categoryId: group.categoryId,
+      total: Number(group._sum.amount ?? 0),
+    }));
+  }
+
+  async sumByMonth(
+    userId: string,
+    from: Date,
+    to: Date,
+  ): Promise<MonthlyTransactionSummary[]> {
+    const transactions = await this.prisma.transaction.findMany({
+      where: { userId, date: { gte: from, lte: to } },
+      select: { date: true, type: true, amount: true },
+    });
+
+    const totals = new Map<string, MonthlyTransactionSummary>();
+
+    for (const transaction of transactions) {
+      const month = toMonthKey(transaction.date);
+      const current = totals.get(month) ?? { month, income: 0, expense: 0 };
+      const amount = Number(transaction.amount);
+
+      if (transaction.type === 'income') {
+        current.income += amount;
+      } else {
+        current.expense += amount;
+      }
+
+      totals.set(month, current);
+    }
+
+    return Array.from(totals.values());
+  }
+
   private toPersistence(transaction: Transaction) {
     return {
       id: transaction.id,
@@ -177,4 +255,11 @@ export class PrismaTransactionRepository implements TransactionRepository {
       userId: raw.userId,
     });
   }
+}
+
+function toMonthKey(date: Date): string {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+
+  return `${year}-${month}`;
 }

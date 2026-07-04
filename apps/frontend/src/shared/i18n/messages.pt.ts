@@ -85,6 +85,8 @@ export const errorMessagesPt = {
   'budget.category.not.found': 'Categoria não encontrada.',
   'budget.already.exists': 'Já existe um orçamento para essa categoria neste mês. Edite o orçamento existente.',
   'budget.not.found': 'Orçamento não encontrado.',
+  'analytics.month': 'Informe o mês no formato AAAA-MM.',
+  'analytics.months': 'Informe uma quantidade de meses válida (entre 1 e 24).',
 } as const;
 
 export type ErrorMessageKey = keyof typeof errorMessagesPt;

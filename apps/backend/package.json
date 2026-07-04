@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "@meubolso/accounts": "*",
+    "@meubolso/analytics": "*",
     "@meubolso/auth": "*",
     "@meubolso/budgets": "*",
     "@meubolso/categories": "*",

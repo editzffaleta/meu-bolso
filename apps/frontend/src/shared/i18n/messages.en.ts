@@ -87,4 +87,6 @@ export const errorMessagesEn: ErrorMessages = {
   'budget.category.not.found': 'Category not found.',
   'budget.already.exists': 'A budget already exists for this category in this month. Edit the existing budget.',
   'budget.not.found': 'Budget not found.',
+  'analytics.month': 'Enter the month in YYYY-MM format.',
+  'analytics.months': 'Enter a valid number of months (between 1 and 24).',
 };

@@ -102,12 +102,7 @@ export class FakeTransactionRepository implements TransactionRepository {
     from: Date,
     to: Date,
   ): Promise<TransactionTypeSummary> {
-    const scoped = this.transactions.filter(
-      (transaction) =>
-        transaction.userId === userId &&
-        transaction.date >= from &&
-        transaction.date <= to,
-    );
+    const scoped = this.inRange(userId, from, to);
 
     return scoped.reduce<TransactionTypeSummary>(
       (acc, transaction) => {
@@ -128,12 +123,8 @@ export class FakeTransactionRepository implements TransactionRepository {
     from: Date,
     to: Date,
   ): Promise<CategorySpendingSummary[]> {
-    const scoped = this.transactions.filter(
-      (transaction) =>
-        transaction.userId === userId &&
-        transaction.type === "expense" &&
-        transaction.date >= from &&
-        transaction.date <= to,
+    const scoped = this.inRange(userId, from, to).filter(
+      (transaction) => transaction.type === "expense",
     );
 
     const totals = new Map<string | null, number>();
@@ -154,18 +145,12 @@ export class FakeTransactionRepository implements TransactionRepository {
     from: Date,
     to: Date,
   ): Promise<MonthlyTransactionSummary[]> {
-    const scoped = this.transactions.filter(
-      (transaction) =>
-        transaction.userId === userId &&
-        transaction.date >= from &&
-        transaction.date <= to,
-    );
+    const scoped = this.inRange(userId, from, to);
 
     const totals = new Map<string, MonthlyTransactionSummary>();
 
     for (const transaction of scoped) {
-      const date = transaction.date;
-      const month = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
+      const month = toMonthKey(transaction.date);
       const current = totals.get(month) ?? { month, income: 0, expense: 0 };
 
       if (transaction.type === "income") {
@@ -179,4 +164,20 @@ export class FakeTransactionRepository implements TransactionRepository {
 
     return Array.from(totals.values());
   }
+
+  private inRange(userId: string, from: Date, to: Date): Transaction[] {
+    return this.transactions.filter(
+      (transaction) =>
+        transaction.userId === userId &&
+        transaction.date >= from &&
+        transaction.date <= to,
+    );
+  }
+}
+
+function toMonthKey(date: Date): string {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+
+  return `${year}-${month}`;
 }
