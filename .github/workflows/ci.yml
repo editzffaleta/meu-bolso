@@ -10,6 +10,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      # Valor fictício apenas para o carregamento do prisma.config.ts e do build;
+      # nenhum passo da CI conecta ao banco (testes usam fakes).
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/meubolso_ci
+      JWT_SECRET: ci-dummy-secret
+
     steps:
       - uses: actions/checkout@v4
 
