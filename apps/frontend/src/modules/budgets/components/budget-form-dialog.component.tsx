@@ -33,6 +33,10 @@ function budgetToFormValues(budget: Budget | null, month: string): BudgetFormVal
 }
 
 export function BudgetFormDialog(props: BudgetFormDialogProps) {
+  if (!props.open) {
+    return <Dialog open={props.open} onOpenChange={props.onOpenChange} />;
+  }
+
   return <BudgetFormDialogContent key={props.budget?.id ?? `new-${props.month}`} {...props} />;
 }
 

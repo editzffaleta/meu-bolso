@@ -54,6 +54,10 @@ function transactionToFormValues(transaction: Transaction | null): TransactionFo
 }
 
 export function TransactionFormDialog(props: TransactionFormDialogProps) {
+  if (!props.open) {
+    return <Dialog open={props.open} onOpenChange={props.onOpenChange} />;
+  }
+
   return <TransactionFormDialogContent key={props.transaction?.id ?? 'new'} {...props} />;
 }
 
