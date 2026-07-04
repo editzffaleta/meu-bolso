@@ -1,9 +1,9 @@
 'use client';
 
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import Cookies from 'js-cookie';
 import { getMessage } from '@/shared/i18n';
-import { decodeJwtPayload } from '../util/jwt.util';
+import { decodeJwtPayload, isTokenExpired } from '../util/jwt.util';
 
 const AUTH_TOKEN_COOKIE = 'auth_token';
 const COOKIE_EXPIRES_DAYS = 7;
@@ -29,15 +29,20 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 function hydrateFromToken(token: string): AuthUser | null {
   const payload = decodeJwtPayload(token);
   if (!payload) return null;
+  if (isTokenExpired(payload)) return null;
 
   return { id: payload.sub, name: payload.name, email: payload.email };
 }
 
-function readInitialSession(): { user: AuthUser | null; token: string | null; status: AuthStatus } {
-  if (typeof window === 'undefined') {
-    return { user: null, token: null, status: 'loading' };
-  }
+type Session = { user: AuthUser | null; token: string | null; status: AuthStatus };
 
+const INITIAL_SESSION: Session = {
+  user: null,
+  token: null,
+  status: 'loading',
+};
+
+function readSessionFromCookie(): Session {
   const savedToken = Cookies.get(AUTH_TOKEN_COOKIE) ?? null;
   if (!savedToken) {
     return { user: null, token: null, status: 'unauthenticated' };
@@ -53,7 +58,14 @@ function readInitialSession(): { user: AuthUser | null; token: string | null; st
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState(readInitialSession);
+  const [session, setSession] = useState(INITIAL_SESSION);
+
+  useEffect(() => {
+    // Hidratação única da sessão a partir do cookie (fonte externa) no mount do
+    // cliente, evitando mismatch de SSR/CSR. Não é derivação de estado de props.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSession(readSessionFromCookie());
+  }, []);
 
   const login = useCallback((newToken: string) => {
     const hydratedUser = hydrateFromToken(newToken);

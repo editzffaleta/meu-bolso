@@ -2,6 +2,7 @@ export type JwtPayload = {
   sub: string;
   name: string;
   email: string;
+  exp?: number;
 };
 
 function base64UrlToUint8Array(base64Url: string): Uint8Array {
@@ -41,4 +42,11 @@ export function decodeJwtPayload(token: string): JwtPayload | null {
   } catch {
     return null;
   }
+}
+
+export function isTokenExpired(payload: JwtPayload): boolean {
+  if (typeof payload.exp !== 'number') return false;
+
+  const nowInSeconds = Date.now() / 1000;
+  return payload.exp <= nowInSeconds;
 }
