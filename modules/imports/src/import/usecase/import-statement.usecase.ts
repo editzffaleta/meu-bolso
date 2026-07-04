@@ -26,6 +26,7 @@ export interface ImportStatementOut {
   totalRows: number;
   importedRows: number;
   duplicateRows: number;
+  invalidRows: number;
 }
 
 export class ImportStatement
@@ -53,9 +54,9 @@ export class ImportStatement
     const parser =
       input.format === "csv" ? this.csvStatementParser : this.ofxStatementParser;
 
-    const rows = await parser.parse(input.content);
+    const { rows, invalidRows } = await parser.parse(input.content);
 
-    if (rows.length === 0) {
+    if (rows.length === 0 && invalidRows === 0) {
       throw new ValidationError("import.file.empty");
     }
 
@@ -88,14 +89,17 @@ export class ImportStatement
       rowsToImport.push(row);
     }
 
+    const totalRows = rows.length + invalidRows;
+
     let importEntity = new Import({
       fileName: input.fileName,
       format: input.format,
       status: "processing",
       accountId: input.accountId,
-      totalRows: rows.length,
+      totalRows,
       importedRows: 0,
       duplicateRows,
+      invalidRows,
       userId: input.userId,
     });
 
@@ -149,9 +153,10 @@ export class ImportStatement
 
     return {
       importId: finishedImport.id,
-      totalRows: rows.length,
+      totalRows,
       importedRows: rowsToImport.length,
       duplicateRows,
+      invalidRows,
     };
   }
 }

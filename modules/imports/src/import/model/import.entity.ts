@@ -27,6 +27,7 @@ export interface ImportState extends EntityState {
   totalRows: number;
   importedRows: number;
   duplicateRows: number;
+  invalidRows: number;
   userId: string;
 }
 
@@ -38,6 +39,7 @@ export class Import extends Entity<ImportState> {
       totalRows: props.totalRows ?? 0,
       importedRows: props.importedRows ?? 0,
       duplicateRows: props.duplicateRows ?? 0,
+      invalidRows: props.invalidRows ?? 0,
     });
   }
 
@@ -67,6 +69,10 @@ export class Import extends Entity<ImportState> {
 
   get duplicateRows(): number {
     return this.props.duplicateRows;
+  }
+
+  get invalidRows(): number {
+    return this.props.invalidRows;
   }
 
   get userId(): string {

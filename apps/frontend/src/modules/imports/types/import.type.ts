@@ -11,6 +11,7 @@ export type ImportRecord = {
   totalRows: number;
   importedRows: number;
   duplicateRows: number;
+  invalidRows: number;
   userId: string;
   createdAt: string;
 };
@@ -20,6 +21,7 @@ export type ImportStatementResult = {
   totalRows: number;
   importedRows: number;
   duplicateRows: number;
+  invalidRows: number;
 };
 
 export type ListImportsResult = {

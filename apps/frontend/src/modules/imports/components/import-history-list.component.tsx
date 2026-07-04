@@ -81,7 +81,9 @@ export function ImportHistoryList({ imports, isLoading }: ImportHistoryListProps
       ) : (
         imports.map((item) => {
           const visual = statusVisual(item.status);
-          const summary = `${item.totalRows} linhas · ${item.importedRows} importadas · ${item.duplicateRows} duplicadas`;
+          const summary =
+            `${item.totalRows} linhas · ${item.importedRows} importadas · ${item.duplicateRows} duplicadas` +
+            (item.invalidRows > 0 ? ` · ${item.invalidRows} rejeitadas` : '');
 
           return (
             <div
