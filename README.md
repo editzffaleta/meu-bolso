@@ -14,8 +14,16 @@ gastos **categorizados automaticamente** e acompanhe para onde o dinheiro vai em
 ![Dashboard do meu-bolso](screenshots/dashboard.png)
 
 <p align="center">
-  <img src="screenshots/transacoes.png" width="49%" alt="Transações com filtros" />
+  <img src="screenshots/transacoes.png" width="49%" alt="Transações com filtros e paginação" />
+  <img src="screenshots/importar.png" width="49%" alt="Importação de extratos CSV/OFX" />
+</p>
+<p align="center">
   <img src="screenshots/orcamentos.png" width="49%" alt="Orçamentos com barras de progresso" />
+  <img src="screenshots/categorias.png" width="49%" alt="Categorias e regras de categorização" />
+</p>
+<p align="center">
+  <img src="screenshots/contas.png" width="49%" alt="Contas do usuário" />
+  <img src="screenshots/login.png" width="49%" alt="Tela de acesso" />
 </p>
 
 ## ✨ Funcionalidades
@@ -76,8 +84,9 @@ migrations:
 npm run seed:demo
 ```
 
-Depois, faça login com `demo@meubolso.app` e a senha definida em `SEED_DEMO_PASSWORD`. O script é
-idempotente — pode ser executado novamente sem duplicar dados.
+Depois, na tela de acesso, clique em **"Entrar com conta de demonstração"** (ou informe
+`demo@meubolso.app` e a senha definida em `SEED_DEMO_PASSWORD`). O script é idempotente — pode ser
+executado novamente sem duplicar dados.
 
 ## 📂 Estrutura
 
