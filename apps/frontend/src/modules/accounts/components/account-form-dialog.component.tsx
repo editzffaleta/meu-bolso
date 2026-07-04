@@ -41,6 +41,10 @@ function accountToFormValues(account: Account | null): AccountFormValues {
 }
 
 export function AccountFormDialog(props: AccountFormDialogProps) {
+  if (!props.open) {
+    return <Dialog open={props.open} onOpenChange={props.onOpenChange} />;
+  }
+
   return <AccountFormDialogContent key={props.account?.id ?? 'new'} {...props} />;
 }
 

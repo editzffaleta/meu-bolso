@@ -43,6 +43,10 @@ function categoryToFormValues(category: Category | null): CategoryFormValues {
 }
 
 export function CategoryFormDialog(props: CategoryFormDialogProps) {
+  if (!props.open) {
+    return <Dialog open={props.open} onOpenChange={props.onOpenChange} />;
+  }
+
   return <CategoryFormDialogContent key={props.category?.id ?? 'new'} {...props} />;
 }
 
