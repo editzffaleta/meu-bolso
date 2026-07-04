@@ -81,6 +81,9 @@ jobs:
       - name: Generate Prisma Client
         run: npm run prisma:generate --workspace @meubolso/backend
 
+      - name: Build workspaces
+        run: npm run build
+
       - name: Run database migrations
         run: npm run prisma:migrate:deploy --workspace @meubolso/backend
 
