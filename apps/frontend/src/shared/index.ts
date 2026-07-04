@@ -24,7 +24,6 @@ export * from './components/ui/label';
 export * from './components/ui/lucide-icon-by-key';
 export * from './components/ui/mini-form-card';
 export * from './components/ui/metric-card';
-export * from './components/ui/sidebar-menu.component';
 export * from './components/ui/table-card';
 export * from './components/ui/navigation-link-card';
 export * from './components/ui/orderable-object-list';
