@@ -1,0 +1,24 @@
+name: meubolso-meu-bolso-backend-db
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: meubolso-meu-bolso-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: meubolso_meu_bolso
+      POSTGRES_PASSWORD: docker
+      POSTGRES_DB: meubolso_meu_bolso_db
+    ports:
+      - '5860:5432'
+    volumes:
+      - meubolso-meu-bolso-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U meubolso_meu_bolso']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  meubolso-meu-bolso-postgres-data:
+    driver: local
