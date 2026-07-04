@@ -78,6 +78,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Prepare env files
+        run: |
+          printf 'DATABASE_URL=%s\nJWT_SECRET=%s\nJWT_EXPIRES_IN=1d\nPORT=4000\n' "$DATABASE_URL" "$JWT_SECRET" > apps/backend/.env
+          printf 'NEXT_PUBLIC_API_URL=%s\n' "$NEXT_PUBLIC_API_URL" > apps/frontend/.env
+
       - name: Generate Prisma Client
         run: npm run prisma:generate --workspace @meubolso/backend
 
